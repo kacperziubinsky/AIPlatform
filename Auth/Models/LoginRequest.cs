@@ -1,4 +1,4 @@
-﻿namespace Auth.Model;
+﻿namespace Auth.Models;
 
 public class LoginRequest
 {

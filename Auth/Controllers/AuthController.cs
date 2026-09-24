@@ -1,9 +1,10 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.AspNetCore.Identity.Data;
+using Auth.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using LoginRequest = Microsoft.AspNetCore.Identity.Data.LoginRequest;
 
 namespace Auth.Controllers;
 
@@ -36,5 +37,16 @@ public class AuthController : ControllerBase
             return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
         }
         return Unauthorized();
+    }
+
+    [HttpPost("register")]
+    public IActionResult Register([FromBody] User request)
+    {
+        if (request.Email != "" || request.Password != "")
+        {
+            return BadRequest();
+        }
+        
+        
     }
 }

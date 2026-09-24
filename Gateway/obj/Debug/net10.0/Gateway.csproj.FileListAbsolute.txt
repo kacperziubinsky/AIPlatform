@@ -33,3 +33,13 @@ C:\Users\Kacper\RiderProjects\AI platform\Gateway\obj\Debug\net10.0\refint\Gatew
 C:\Users\Kacper\RiderProjects\AI platform\Gateway\obj\Debug\net10.0\Gateway.pdb
 C:\Users\Kacper\RiderProjects\AI platform\Gateway\obj\Debug\net10.0\Gateway.genruntimeconfig.cache
 C:\Users\Kacper\RiderProjects\AI platform\Gateway\obj\Debug\net10.0\ref\Gateway.dll
+C:\Users\Kacper\RiderProjects\AI platform\Gateway\bin\Debug\net10.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\Users\Kacper\RiderProjects\AI platform\Gateway\bin\Debug\net10.0\Microsoft.Bcl.Cryptography.dll
+C:\Users\Kacper\RiderProjects\AI platform\Gateway\bin\Debug\net10.0\Microsoft.IdentityModel.Abstractions.dll
+C:\Users\Kacper\RiderProjects\AI platform\Gateway\bin\Debug\net10.0\Microsoft.IdentityModel.JsonWebTokens.dll
+C:\Users\Kacper\RiderProjects\AI platform\Gateway\bin\Debug\net10.0\Microsoft.IdentityModel.Logging.dll
+C:\Users\Kacper\RiderProjects\AI platform\Gateway\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.dll
+C:\Users\Kacper\RiderProjects\AI platform\Gateway\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+C:\Users\Kacper\RiderProjects\AI platform\Gateway\bin\Debug\net10.0\Microsoft.IdentityModel.Tokens.dll
+C:\Users\Kacper\RiderProjects\AI platform\Gateway\bin\Debug\net10.0\System.IdentityModel.Tokens.Jwt.dll
+C:\Users\Kacper\RiderProjects\AI platform\Gateway\obj\Debug\net10.0\Gateway.sourcelink.json

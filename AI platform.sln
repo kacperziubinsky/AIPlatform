@@ -6,6 +6,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{FF
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Auth", "Auth\Auth.csproj", "{6D4B0847-D95C-4AE0-9B5F-52FBBDDC62B5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Offer", "Offer\Offer.csproj", "{CAAE895D-DDB9-4858-ACAD-F086EDC60A52}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B7FD3FB2-4FCA-4F11-A908-3F140F7B85E6}"
+	ProjectSection(SolutionItems) = preProject
+		docker-compose.yaml = docker-compose.yaml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,8 +27,13 @@ Global
 		{6D4B0847-D95C-4AE0-9B5F-52FBBDDC62B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6D4B0847-D95C-4AE0-9B5F-52FBBDDC62B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6D4B0847-D95C-4AE0-9B5F-52FBBDDC62B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CAAE895D-DDB9-4858-ACAD-F086EDC60A52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CAAE895D-DDB9-4858-ACAD-F086EDC60A52}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CAAE895D-DDB9-4858-ACAD-F086EDC60A52}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CAAE895D-DDB9-4858-ACAD-F086EDC60A52}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{6D4B0847-D95C-4AE0-9B5F-52FBBDDC62B5} = {FFCC5B89-7C27-415E-98DE-CD0A8ADD8D42}
+		{CAAE895D-DDB9-4858-ACAD-F086EDC60A52} = {FFCC5B89-7C27-415E-98DE-CD0A8ADD8D42}
 	EndGlobalSection
 EndGlobal

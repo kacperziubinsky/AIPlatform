@@ -40,3 +40,4 @@ C:\Users\Kacper\RiderProjects\AI platform\Auth\obj\Debug\net10.0\refint\Auth.dll
 C:\Users\Kacper\RiderProjects\AI platform\Auth\obj\Debug\net10.0\Auth.pdb
 C:\Users\Kacper\RiderProjects\AI platform\Auth\obj\Debug\net10.0\Auth.genruntimeconfig.cache
 C:\Users\Kacper\RiderProjects\AI platform\Auth\obj\Debug\net10.0\ref\Auth.dll
+C:\Users\Kacper\RiderProjects\AI platform\Auth\obj\Debug\net10.0\Auth.sourcelink.json

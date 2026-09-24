@@ -1,0 +1,39 @@
+# This is a generated file. Not intended for manual editing.
+version: "3.4"
+services:
+  auth:
+    build:
+      context: "C:\\Users\\Kacper\\RiderProjects\\AI platform"
+      dockerfile: "Auth/Dockerfile"
+      target: "base"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net10.0/Auth.dll"
+    environment:
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "auth:dev"
+    ports: []
+    volumes:
+    - "C:\\Users\\Kacper\\RiderProjects\\AI platform\\Auth:/app:rw"
+    - "C:\\Users\\Kacper\\RiderProjects\\AI platform:/src:rw"
+    - "C:\\Users\\Kacper\\.nuget\\packages:/home/app/.nuget/packages"
+    working_dir: "/app"
+  gateway:
+    build:
+      context: "C:\\Users\\Kacper\\RiderProjects\\AI platform"
+      dockerfile: "Gateway/Dockerfile"
+      target: "base"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net10.0/Gateway.dll"
+    environment:
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "gateway:dev"
+    ports: []
+    volumes:
+    - "C:\\Users\\Kacper\\RiderProjects\\AI platform\\Gateway:/app:rw"
+    - "C:\\Users\\Kacper\\RiderProjects\\AI platform:/src:rw"
+    - "C:\\Users\\Kacper\\.nuget\\packages:/home/app/.nuget/packages"
+    working_dir: "/app"
