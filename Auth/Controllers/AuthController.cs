@@ -1,10 +1,6 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using Auth.Models;
+﻿using Auth.DTOs;
+using Auth.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using LoginRequest = Microsoft.AspNetCore.Identity.Data.LoginRequest;
 
 namespace Auth.Controllers;
 
@@ -12,41 +8,28 @@ namespace Auth.Controllers;
 [Route("[controller]")]
 public class AuthController : ControllerBase
 {
-    
-    [HttpPost("login")]
-    public IActionResult Login([FromBody] LoginRequest request)
-    {
-        if (request.Email != "" && request.Password != "")
-        {
-            var claims = new[]
-            {
-                new Claim(ClaimTypes.Email, request.Email),
-                new Claim(ClaimTypes.Role, "Admin"),
-            };
-            
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("6ymfS6QVPkpRcVXlPbt7wzQRopENIs3Nx6etwErkBOt"));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+    private readonly IAuthService _authService;
 
-            var token = new JwtSecurityToken(
-                issuer: "AI Platform",
-                audience: "AI Platform",
-                claims: claims,
-                expires: DateTime.Now.AddMinutes(60),
-                signingCredentials: creds
-            );
-            return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
-        }
-        return Unauthorized();
+    public AuthController(IAuthService authService)
+    {
+        _authService = authService;
+    }
+
+    [HttpPost("login")]
+    public async Task<ActionResult<AuthResponse>> Login(
+        [FromBody] LoginRequest request)
+    {
+        var response = await _authService.LoginAsync(request);
+
+        return Ok(response);
     }
 
     [HttpPost("register")]
-    public IActionResult Register([FromBody] User request)
+    public async Task<ActionResult<AuthResponse>> Register(
+        [FromBody] RegisterRequest request)
     {
-        if (request.Email != "" || request.Password != "")
-        {
-            return BadRequest();
-        }
-        
-        
+        var response = await _authService.RegisterAsync(request);
+
+        return Ok(response);
     }
 }

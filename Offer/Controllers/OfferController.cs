@@ -10,6 +10,6 @@ public class OfferController : ControllerBase
     [HttpGet]
     public IActionResult Get()
     {
-        
+        return Ok();
     }
 }

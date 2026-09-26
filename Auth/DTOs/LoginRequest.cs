@@ -1,4 +1,6 @@
-﻿namespace Auth.Models;
+﻿using Auth.Models.Enums;
+
+namespace Auth.DTOs;
 
 public class LoginRequest
 {

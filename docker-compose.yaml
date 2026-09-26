@@ -1,32 +1,18 @@
-﻿version: '3.4'
-
-services:
+﻿services:
   gateway:
     container_name: gateway-service
     build:
       context: .
       dockerfile: Gateway/Dockerfile
     ports:
-      - "8080:80"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - Auth__BaseUrl=http://auth:80
-      - WebApp__BaseUrl=http://webapplication1:80
-    depends_on:
-      - auth
-    networks:
-      - ai-network
-  
+      - "8080:8080"
+
   auth:
     container_name: auth-service
     build:
       context: .
       dockerfile: Auth/Dockerfile
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-    networks:
-      - ai-network
-  
+
   db:
     image: postgres:17-alpine
     container_name: postgres_db
@@ -34,20 +20,9 @@ services:
       - "5433:5432"
     environment:
       POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: auth_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
-      interval: 10s
-      retries: 5
-      start_period: 30s
-      timeout: 10s
-    networks:
-      - ai-network
-      
-networks:
-  ai-network:
-    driver: bridge
 
 volumes:
   postgres_data:
