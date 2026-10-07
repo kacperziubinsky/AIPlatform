@@ -1,8 +1,10 @@
-﻿namespace Offer.Models;
+﻿using Offer.Models.Enums;
 
-public class Offer
+namespace Offer.Models;
+
+public class JobOffer
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public required string Title { get; set; }
     public required string Description { get; set; }
     public decimal Salary { get; set; }
@@ -11,5 +13,7 @@ public class Offer
     public Experience Experience { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
-    public int AuthorID {get; set;}
+    public DateTime CreatedOn { get; set; }
+    public Guid AuthorId {get; set;}
+    public string? Company { get; set; }
 }

@@ -1,8 +1,8 @@
-﻿namespace Offer.Models;
+﻿namespace User.Models.Enums;
 
 public enum Experience
 {
-    Trainne,
+    Trainee,
     Junior,
     Middle,
     Senior,

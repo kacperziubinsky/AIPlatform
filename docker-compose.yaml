@@ -6,12 +6,42 @@
       dockerfile: Gateway/Dockerfile
     ports:
       - "8080:8080"
+    depends_on:
+      - auth
+      - offer
+      - user
 
   auth:
-    container_name: auth-service
+    container_name: auth-servicels
+    
     build:
       context: .
       dockerfile: Auth/Dockerfile
+    environment:
+      Services__UserUrl: "http://user:8080/"
+      InternalApiKey: "dev-internal-key-change-me"
+    depends_on:
+      - db
+      - user
+
+  offer:
+    container_name: offer-service
+    build:
+      context: .
+      dockerfile: Offer/Dockerfile
+    depends_on:
+      - db
+
+  user:
+    container_name: user-service
+    build:
+      context: .
+      dockerfile: User/Dockerfile
+    environment:
+      InternalApiKey: "dev-internal-key-change-me"
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=user_db;Username=postgres;Password=admin123"
+    depends_on:
+      - db
 
   db:
     image: postgres:17-alpine

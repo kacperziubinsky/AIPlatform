@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Auth.Data;
 
-public class AuthDBContext : DbContext
+public class AuthDbContext : DbContext
 {
-    public AuthDBContext(DbContextOptions<AuthDBContext> options) : base(options) { }
+    public AuthDbContext(DbContextOptions<AuthDbContext> options) : base(options) { }
     
     public DbSet<User> Users { get; set; }
 }

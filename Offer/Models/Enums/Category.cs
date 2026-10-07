@@ -1,10 +1,10 @@
-﻿namespace Offer.Models;
+﻿namespace Offer.Models.Enums;
 
 public enum Category
 {
-    AI,
+    Ai,
     Backend,
-    PM,
+    Pm,
     FullStack,
     Software,
     Frontend

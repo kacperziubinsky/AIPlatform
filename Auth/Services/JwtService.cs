@@ -21,7 +21,7 @@ public class JwtService : IJwtService
         var claims = new[]
         {
             new Claim(
-                ClaimTypes.NameIdentifier,
+                JwtRegisteredClaimNames.Sub,
                 user.Id.ToString()),
             new Claim(
                 ClaimTypes.Email,

@@ -2,7 +2,7 @@
 
 namespace Auth.DTOs;
 
-public class LoginRequest
+public record LoginRequest
 {
     public required string Email { get; init; }
     public required string Password { get; init; }

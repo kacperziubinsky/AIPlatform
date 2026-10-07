@@ -1,8 +1,8 @@
-﻿namespace Auth.Models.Enums;
+﻿namespace Offer.Models.Enums;
 
 public enum Experience
 {
-    Trainne,
+    Trainnee,
     Junior,
     Middle,
     Senior,

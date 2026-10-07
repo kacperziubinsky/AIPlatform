@@ -1,7 +1,6 @@
 ﻿using System.Security.Authentication;
 using Auth.Data;
 using Auth.DTOs;
-using Auth.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,18 +8,21 @@ namespace Auth.Services;
 
 public class AuthService: IAuthService
 {
-    private readonly AuthDBContext _context;
+    private readonly AuthDbContext _context;
     private readonly IJwtService _jwtService;
     private readonly PasswordHasher<User> _passwordHasher;
+    private readonly IUserServiceClient _userServiceClient;
     
     public AuthService(
-        AuthDBContext context,
+        AuthDbContext context,
         IJwtService jwtService,
-        PasswordHasher<User> passwordHasher)
+        PasswordHasher<User> passwordHasher, 
+        IUserServiceClient userServiceClient)
     {
         _context = context;
         _jwtService = jwtService;
         _passwordHasher = passwordHasher;
+        _userServiceClient = userServiceClient;
     }
     public async Task<AuthResponse> LoginAsync(LoginRequest request)
     {
@@ -61,9 +63,6 @@ public class AuthService: IAuthService
         {
             Id = Guid.NewGuid(),
             Email = request.Email,
-            Firstname = request.Firstname,
-            Lastname = request.Lastname,
-            Phone = request.Phone,
             Role = request.Role
         };
         
@@ -71,6 +70,15 @@ public class AuthService: IAuthService
         
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
+
+        try
+        {
+            await _userServiceClient.CreateUserAsync(user.Id);
+        }
+        catch
+        {
+            throw new Exception("Failed to create user");
+        }
         
         var token = _jwtService.GenerateToken(user);
         

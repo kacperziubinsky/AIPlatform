@@ -7,35 +7,45 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
-builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
-
-builder.Services.AddDbContext<AuthDBContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
-
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.Converters.Add(
-            new JsonStringEnumConverter()
-        );
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
+
+builder.Services.AddOpenApi();
+
+builder.Services.AddDbContext<AuthDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+var userServiceUrl = builder.Configuration["Services:UserUrl"]
+                     ?? throw new InvalidOperationException("Missing config: Services:UserUrl");
+var internalApiKey = builder.Configuration["InternalApiKey"]
+                     ?? throw new InvalidOperationException("Missing config: InternalApiKey");
+
+builder.Services.AddHttpClient<IUserServiceClient, UserServiceClient>(c =>
+    {
+        c.BaseAddress = new Uri(userServiceUrl);
+        c.DefaultRequestHeaders.Add("X-Api-Key", internalApiKey);
+    })
+    .AddStandardResilienceHandler();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
-builder.Services.AddScoped<PasswordHasher<User>>();
+builder.Services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
+    db.Database.Migrate();
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
-
 
 app.UseAuthorization();
 

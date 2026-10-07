@@ -1,6 +1,6 @@
 ﻿namespace Auth.DTOs;
 
-public class AuthResponse
+public record AuthResponse
 {
     public required string Token  { get; set; }
     public DateTime ExpiresAt { get; init; }
