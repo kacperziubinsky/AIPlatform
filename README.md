@@ -1,0 +1,1 @@
+[![Architecture diagram of kacperziubinsky/aiplatform](https://gitdiagram.com/kacperziubinsky/aiplatform/diagram.png)](https://gitdiagram.com/kacperziubinsky/aiplatform?utm_source=readme&utm_medium=picture)
