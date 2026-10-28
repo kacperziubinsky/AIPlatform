@@ -1,0 +1,36 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/offer/offers'
+order: 2000
+headers:
+  - key: Content-Type
+    value: 'application/json'
+body:
+  type: json
+  content: |-
+    {
+      "title": "Senior .NET Developer {{runId}}",
+      "description": "Rozwój mikroserwisów w .NET z bazą PostgreSQL.",
+      "salary": 20000,
+      "category": 1,
+      "experience": 3,
+      "stack": ["C#", ".NET", "PostgreSQL", "Kubernetes"],
+      "requirements": [
+        { "name": "C# / .NET", "description": "Commercial backend experience in .NET", "weight": 5, "isRequired": true },
+        { "name": "PostgreSQL", "description": "Designing schemas and queries", "weight": 3, "isRequired": false },
+        { "name": "Kubernetes", "description": "Deploying services to a cluster", "weight": 1, "isRequired": false }
+      ],
+      "startDate": "{{offerStart}}",
+      "endDate": "{{offerEnd}}",
+      "company": "Test Corp Sp. z o.o."
+    }
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      pm.collectionVariables.set('offerStart', new Date(Date.now() + 60 * 60 * 1000).toISOString());
+      pm.collectionVariables.set('offerEnd', new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString());
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status 401", () => pm.response.to.have.status(401));

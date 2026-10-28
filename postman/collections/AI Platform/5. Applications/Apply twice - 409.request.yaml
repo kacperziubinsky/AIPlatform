@@ -1,0 +1,22 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/recruitment/api/applications'
+order: 5000
+headers:
+  - key: Authorization
+    value: 'Bearer {{applicantToken}}'
+  - key: Content-Type
+    value: 'application/json'
+body:
+  type: json
+  content: |-
+    {
+      "offerId": "{{offerId}}",
+      "cvId": "{{cvId}}",
+      "coverLetter": "Chętnie dołączę do zespołu."
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status 409", () => pm.response.to.have.status(409));

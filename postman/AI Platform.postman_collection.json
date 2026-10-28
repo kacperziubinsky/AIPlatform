@@ -1,0 +1,2174 @@
+{
+  "info": {
+    "name": "AI Platform",
+    "description": "End-to-end tests through the YARP gateway (same requests as postman/collections/AI Platform).\nCV uploads use paths relative to the repo root: set the repo as Postman's working directory.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "password",
+      "value": "Password123!"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Auth",
+      "description": "Registration and login status codes, email normalization.",
+      "item": [
+        {
+          "name": "Register recruiter",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"Recruiter.{{runId}}@Example.com\",\n  \"password\": \"{{password}}\",\n  \"role\": \"Recruiter\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Fresh identities per run so the collection is repeatable.",
+                  "pm.collectionVariables.set('runId', Date.now().toString());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Returns a token\", () => pm.expect(body.token).to.be.a('string').and.not.empty);",
+                  "pm.test(\"Email is normalized to lowercase\", () => pm.expect(body.email).to.eql(`recruiter.${pm.collectionVariables.get('runId')}@example.com`));",
+                  "pm.test(\"Expiry is in the future\", () => pm.expect(new Date(body.expiresAt) > new Date()).to.be.true);",
+                  "pm.collectionVariables.set('recruiterToken', body.token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register second recruiter",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"recruiter.b.{{runId}}@example.com\",\n  \"password\": \"{{password}}\",\n  \"role\": \"Recruiter\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('recruiterBToken', pm.response.json().token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register applicant",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"applicant.{{runId}}@example.com\",\n  \"password\": \"{{password}}\",\n  \"role\": \"Applicant\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('applicantToken', pm.response.json().token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register duplicate email (different case) - 409",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"APPLICANT.{{runId}}@example.com\",\n  \"password\": \"{{password}}\",\n  \"role\": \"Applicant\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register with unknown role - 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin.{{runId}}@example.com\",\n  \"password\": \"{{password}}\",\n  \"role\": \"Admin\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register with short password - 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"short.{{runId}}@example.com\",\n  \"password\": \"abc\",\n  \"role\": \"Applicant\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login with uppercase email",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"APPLICANT.{{runId}}@EXAMPLE.COM\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('applicantToken', pm.response.json().token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login with wrong password - 401",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"applicant.{{runId}}@example.com\",\n  \"password\": \"WrongPassword1!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login unknown user - 401",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"nobody.{{runId}}@example.com\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Users",
+      "description": "Profiles created on registration, onboarding, role checks, internal API hidden by the gateway.",
+      "item": [
+        {
+          "name": "Get my profile without token - 401",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/user/api/users/me"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get my profile (applicant)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{applicantToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/user/api/users/me"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Profile was created on registration and has an id\", () => pm.expect(body.id).to.be.a('string').and.not.empty);",
+                  "pm.collectionVariables.set('applicantId', body.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get my profile (recruiter)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{recruiterToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/user/api/users/me"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('recruiterId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update my profile (applicant)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{applicantToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/user/api/users/me",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"  Jan  \",\n  \"lastname\": \"Testowy\",\n  \"phone\": \"+48123456789\",\n  \"city\": \"Warszawa\",\n  \"stack\": [\"C#\", \".NET\", \"PostgreSQL\", \"Docker\"],\n  \"experience\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Names are trimmed\", () => pm.expect(body.firstname).to.eql('Jan'));",
+                  "pm.test(\"City is returned\", () => pm.expect(body.city).to.eql('Warszawa'));",
+                  "pm.test(\"Stack is saved\", () => pm.expect(body.stack).to.include('PostgreSQL'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update my profile with invalid data - 400",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{applicantToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/user/api/users/me",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\n  \"lastname\": \"Testowy\",\n  \"experience\": 99\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List candidates (recruiter)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{recruiterToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/user/api/users"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "pm.test(\"Contains the new applicant\", () =>",
+                  "    pm.expect(pm.response.json().map(u => u.id)).to.include(pm.collectionVariables.get('applicantId')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get candidate by id (recruiter)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{recruiterToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/user/api/users/{{applicantId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Is the applicant\", () => pm.expect(pm.response.json().lastname).to.eql(\"Testowy\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List candidates as applicant - 403",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{applicantToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/user/api/users"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Internal endpoint via gateway - 404",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/user/internal/users/{{applicantId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Offers",
+      "description": "Recruiter-only writes, author-only edits, validation, public browsing.",
+      "item": [
+        {
+          "name": "Create offer as applicant - 403",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{applicantToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/offer/offers",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Senior .NET Developer {{runId}}\",\n  \"description\": \"Rozwój mikroserwisów w .NET z bazą PostgreSQL.\",\n  \"salary\": 20000,\n  \"category\": 1,\n  \"experience\": 3,\n  \"stack\": [\"C#\", \".NET\", \"PostgreSQL\", \"Kubernetes\"],\n  \"requirements\": [\n    { \"name\": \"C# / .NET\", \"description\": \"Commercial backend experience in .NET\", \"weight\": 5, \"isRequired\": true },\n    { \"name\": \"PostgreSQL\", \"description\": \"Designing schemas and queries\", \"weight\": 3, \"isRequired\": false },\n    { \"name\": \"Kubernetes\", \"description\": \"Deploying services to a cluster\", \"weight\": 1, \"isRequired\": false }\n  ],\n  \"startDate\": \"{{offerStart}}\",\n  \"endDate\": \"{{offerEnd}}\",\n  \"company\": \"Test Corp Sp. z o.o.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('offerStart', new Date(Date.now() + 60 * 60 * 1000).toISOString());",
+                  "pm.collectionVariables.set('offerEnd', new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create offer without token - 401",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/offer/offers",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Senior .NET Developer {{runId}}\",\n  \"description\": \"Rozwój mikroserwisów w .NET z bazą PostgreSQL.\",\n  \"salary\": 20000,\n  \"category\": 1,\n  \"experience\": 3,\n  \"stack\": [\"C#\", \".NET\", \"PostgreSQL\", \"Kubernetes\"],\n  \"requirements\": [\n    { \"name\": \"C# / .NET\", \"description\": \"Commercial backend experience in .NET\", \"weight\": 5, \"isRequired\": true },\n    { \"name\": \"PostgreSQL\", \"description\": \"Designing schemas and queries\", \"weight\": 3, \"isRequired\": false },\n    { \"name\": \"Kubernetes\", \"description\": \"Deploying services to a cluster\", \"weight\": 1, \"isRequired\": false }\n  ],\n  \"startDate\": \"{{offerStart}}\",\n  \"endDate\": \"{{offerEnd}}\",\n  \"company\": \"Test Corp Sp. z o.o.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('offerStart', new Date(Date.now() + 60 * 60 * 1000).toISOString());",
+                  "pm.collectionVariables.set('offerEnd', new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create offer with end before start - 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{recruiterToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/offer/offers",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Senior .NET Developer {{runId}}\",\n  \"description\": \"Rozwój mikroserwisów w .NET z bazą PostgreSQL.\",\n  \"salary\": 20000,\n  \"category\": 1,\n  \"experience\": 3,\n  \"stack\": [\"C#\", \".NET\", \"PostgreSQL\", \"Kubernetes\"],\n  \"requirements\": [\n    { \"name\": \"C# / .NET\", \"description\": \"Commercial backend experience in .NET\", \"weight\": 5, \"isRequired\": true },\n    { \"name\": \"PostgreSQL\", \"description\": \"Designing schemas and queries\", \"weight\": 3, \"isRequired\": false },\n    { \"name\": \"Kubernetes\", \"description\": \"Deploying services to a cluster\", \"weight\": 1, \"isRequired\": false }\n  ],\n  \"startDate\": \"{{offerStart}}\",\n  \"endDate\": \"2020-01-01T00:00:00Z\",\n  \"company\": \"Test Corp Sp. z o.o.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('offerStart', new Date(Date.now() + 60 * 60 * 1000).toISOString());",
+                  "pm.collectionVariables.set('offerEnd', new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create offer (recruiter)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{recruiterToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/offer/offers",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Senior .NET Developer {{runId}}\",\n  \"description\": \"Rozwój mikroserwisów w .NET z bazą PostgreSQL.\",\n  \"salary\": 20000,\n  \"category\": 1,\n  \"experience\": 3,\n  \"stack\": [\"C#\", \".NET\", \"PostgreSQL\", \"Kubernetes\"],\n  \"requirements\": [\n    { \"name\": \"C# / .NET\", \"description\": \"Commercial backend experience in .NET\", \"weight\": 5, \"isRequired\": true },\n    { \"name\": \"PostgreSQL\", \"description\": \"Designing schemas and queries\", \"weight\": 3, \"isRequired\": false },\n    { \"name\": \"Kubernetes\", \"description\": \"Deploying services to a cluster\", \"weight\": 1, \"isRequired\": false }\n  ],\n  \"startDate\": \"{{offerStart}}\",\n  \"endDate\": \"{{offerEnd}}\",\n  \"company\": \"Test Corp Sp. z o.o.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('offerStart', new Date(Date.now() + 60 * 60 * 1000).toISOString());",
+                  "pm.collectionVariables.set('offerEnd', new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Author is the recruiter\", () => pm.expect(body.authorId).to.eql(pm.collectionVariables.get('recruiterId')));",
+                  "pm.test(\"Has 3 requirements\", () => pm.expect(body.requirements).to.have.lengthOf(3));",
+                  "pm.collectionVariables.set('offerId', body.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Browse offers (public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/offer/offers?searchTerm={{runId}}&category=1&minSalary=10000"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "pm.test(\"Finds the new offer\", () =>",
+                  "    pm.expect(pm.response.json().map(o => o.id)).to.include(pm.collectionVariables.get('offerId')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get offer by id (public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/offer/offers/{{offerId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Is the offer\", () => pm.expect(pm.response.json().id).to.eql(pm.collectionVariables.get(\"offerId\")));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update offer as another recruiter - 403",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{recruiterBToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/offer/offers/{{offerId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Senior .NET Developer {{runId}}\",\n  \"description\": \"Rozwój mikroserwisów w .NET z bazą PostgreSQL.\",\n  \"salary\": 20000,\n  \"category\": 1,\n  \"experience\": 3,\n  \"stack\": [\"C#\", \".NET\", \"PostgreSQL\", \"Kubernetes\"],\n  \"requirements\": [\n    { \"name\": \"C# / .NET\", \"description\": \"Commercial backend experience in .NET\", \"weight\": 5, \"isRequired\": true },\n    { \"name\": \"PostgreSQL\", \"description\": \"Designing schemas and queries\", \"weight\": 3, \"isRequired\": false },\n    { \"name\": \"Kubernetes\", \"description\": \"Deploying services to a cluster\", \"weight\": 1, \"isRequired\": false }\n  ],\n  \"startDate\": \"{{offerStart}}\",\n  \"endDate\": \"{{offerEnd}}\",\n  \"company\": \"Test Corp Sp. z o.o.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('offerStart', new Date(Date.now() + 60 * 60 * 1000).toISOString());",
+                  "pm.collectionVariables.set('offerEnd', new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update offer (author)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{recruiterToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/offer/offers/{{offerId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Senior .NET Developer {{runId}}\",\n  \"description\": \"Rozwój mikroserwisów w .NET z bazą PostgreSQL.\",\n  \"salary\": 22000,\n  \"category\": 1,\n  \"experience\": 3,\n  \"stack\": [\"C#\", \".NET\", \"PostgreSQL\", \"Kubernetes\"],\n  \"requirements\": [\n    { \"name\": \"C# / .NET\", \"description\": \"Commercial backend experience in .NET\", \"weight\": 5, \"isRequired\": true },\n    { \"name\": \"PostgreSQL\", \"description\": \"Designing schemas and queries\", \"weight\": 3, \"isRequired\": false },\n    { \"name\": \"Kubernetes\", \"description\": \"Deploying services to a cluster\", \"weight\": 1, \"isRequired\": false }\n  ],\n  \"startDate\": \"{{offerStart}}\",\n  \"endDate\": \"{{offerEnd}}\",\n  \"company\": \"Test Corp Sp. z o.o.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('offerStart', new Date(Date.now() + 60 * 60 * 1000).toISOString());",
+                  "pm.collectionVariables.set('offerEnd', new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Salary updated\", () => pm.expect(pm.response.json().salary).to.eql(22000));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete offer as applicant - 403",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{applicantToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/offer/offers/{{offerId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. CVs",
+      "description": "Upload validation, listing with parse status, ownership.",
+      "item": [
+        {
+          "name": "Upload CV as recruiter - 403",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{recruiterToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/user/api/users/me/cvs",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "postman/fixtures/cv.pdf"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Upload without file - 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{applicantToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/user/api/users/me/cvs",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "note",
+                  "type": "text",
+                  "value": "no file here"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Upload non-PDF disguised as PDF - 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{applicantToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/user/api/users/me/cvs",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "postman/fixtures/not-a-pdf.pdf"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Upload CV (applicant)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{applicantToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/user/api/users/me/cvs",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "postman/fixtures/cv.pdf"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List my CVs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{applicantToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/user/api/users/me/cvs"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "const cvs = pm.response.json();",
+                  "pm.test(\"Has exactly the uploaded CV\", () => pm.expect(cvs).to.have.lengthOf(1));",
+                  "pm.test(\"Shows parse status\", () => pm.expect(['Pending', 'Processing', 'Completed', 'Failed']).to.include(cvs[0].parseStatus));",
+                  "pm.collectionVariables.set('cvId', cvs[0].id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get my CV (parse status, no 500 while parsing)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{applicantToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/user/api/users/me/cvs/{{cvId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Has parseStatus\", () => pm.expect(body.parseStatus).to.be.a('string'));",
+                  "pm.test(\"Data only when completed\", () => pm.expect(body.data === null).to.eql(body.parseStatus !== 'Completed'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get unknown CV - 404",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{applicantToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/user/api/users/me/cvs/{{$guid}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "5. Applications",
+      "description": "Applying, validation, recruiter ownership, status pipeline, manual evaluations.",
+      "item": [
+        {
+          "name": "Apply as recruiter - 403",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{recruiterToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/recruitment/api/applications",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"offerId\": \"{{offerId}}\",\n  \"cvId\": \"{{cvId}}\",\n  \"coverLetter\": \"Chętnie dołączę do zespołu.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Apply to unknown offer - 404",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{applicantToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/recruitment/api/applications",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"offerId\": \"{{$guid}}\",\n  \"cvId\": \"{{cvId}}\",\n  \"coverLetter\": \"Chętnie dołączę do zespołu.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Apply with unknown CV - 404",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{applicantToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/recruitment/api/applications",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"offerId\": \"{{offerId}}\",\n  \"cvId\": \"{{$guid}}\",\n  \"coverLetter\": \"Chętnie dołączę do zespołu.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Apply (applicant)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{applicantToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/recruitment/api/applications",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"offerId\": \"{{offerId}}\",\n  \"cvId\": \"{{cvId}}\",\n  \"coverLetter\": \"Chętnie dołączę do zespołu.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Starts as Submitted\", () => pm.expect(body.status).to.eql('Submitted'));",
+                  "pm.collectionVariables.set('applicationId', body.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Apply twice - 409",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{applicantToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/recruitment/api/applications",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"offerId\": \"{{offerId}}\",\n  \"cvId\": \"{{cvId}}\",\n  \"coverLetter\": \"Chętnie dołączę do zespołu.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "My applications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{applicantToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/recruitment/api/applications/me"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "pm.test(\"Contains the application\", () =>",
+                  "    pm.expect(pm.response.json().map(a => a.id)).to.include(pm.collectionVariables.get('applicationId')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Applications for offer (author)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{recruiterToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/recruitment/api/offers/{{offerId}}/applications"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "const apps = pm.response.json();",
+                  "pm.test(\"Sees the application\", () => pm.expect(apps.map(a => a.id)).to.include(pm.collectionVariables.get('applicationId')));",
+                  "pm.test(\"Exposes AI status\", () => pm.expect(apps[0]).to.have.property('aiStatus'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Applications for offer (other recruiter) - empty",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{recruiterBToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/recruitment/api/offers/{{offerId}}/applications"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Sees nothing\", () => pm.expect(pm.response.json()).to.be.an(\"array\").that.is.empty);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get application (other recruiter) - 404",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{recruiterBToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/recruitment/api/applications/{{applicationId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get application (author)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{recruiterToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/recruitment/api/applications/{{applicationId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Has the chosen CV\", () => pm.expect(pm.response.json().cvId).to.eql(pm.collectionVariables.get(\"cvId\")));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Move to Interview (skip InReview)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{recruiterToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/recruitment/api/applications/{{applicationId}}/status",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Interview\",\n  \"note\": \"Strong CV, invite to a call.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Move back to InReview - 409",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{recruiterToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/recruitment/api/applications/{{applicationId}}/status",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\"status\": \"InReview\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Recruiter sets Withdrawn - 409",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{recruiterToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/recruitment/api/applications/{{applicationId}}/status",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\"status\": \"Withdrawn\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Change status (other recruiter) - 404",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{recruiterBToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/recruitment/api/applications/{{applicationId}}/status",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\"status\": \"Rejected\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Add evaluation with score over 100 - 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{recruiterToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/recruitment/api/applications/{{applicationId}}/evaluations",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\"score\": 150,\n\"comment\": \"Too high\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Add evaluation (author)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{recruiterToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/recruitment/api/applications/{{applicationId}}/evaluations",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\"score\": 80,\n\"comment\": \"Good technical interview.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Source is Recruiter\", () => pm.expect(pm.response.json().source).to.eql(\"Recruiter\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Add evaluation (other recruiter) - 404",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{recruiterBToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/recruitment/api/applications/{{applicationId}}/evaluations",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\"score\": 10\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "6. AI scoring",
+      "description": "Needs LM Studio. Polls until the CV is parsed and the application is scored, then checks the math.",
+      "item": [
+        {
+          "name": "Wait for CV parsing",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{applicantToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/user/api/users/me/cvs/{{cvId}}"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Wait between polls (not before the first one).",
+                  "if (pm.collectionVariables.get('cvPolls')) setTimeout(() => {}, 5000);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const next = (pm.execution && pm.execution.setNextRequest) ? pm.execution.setNextRequest : postman.setNextRequest;",
+                  "",
+                  "const polls = Number(pm.collectionVariables.get('cvPolls') || 0) + 1;",
+                  "const status = pm.response.json().parseStatus;",
+                  "",
+                  "if ((status === 'Pending' || status === 'Processing') && polls < 60) {",
+                  "    pm.collectionVariables.set('cvPolls', polls);",
+                  "    next(pm.info.requestName);",
+                  "} else {",
+                  "    pm.collectionVariables.unset('cvPolls');",
+                  "    pm.test(`CV parsed (after ${polls} polls)`, () => pm.expect(status, pm.response.json().parseError).to.eql('Completed'));",
+                  "    pm.test(\"Skills were extracted\", () => pm.expect(pm.response.json().data.skills).to.not.be.empty);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Wait for AI evaluation",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{recruiterToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/recruitment/api/applications/{{applicationId}}"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.collectionVariables.get('aiPolls')) setTimeout(() => {}, 5000);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const next = (pm.execution && pm.execution.setNextRequest) ? pm.execution.setNextRequest : postman.setNextRequest;",
+                  "",
+                  "const polls = Number(pm.collectionVariables.get('aiPolls') || 0) + 1;",
+                  "const app = pm.response.json();",
+                  "",
+                  "if ((app.aiStatus === 'Pending' || app.aiStatus === 'Processing') && polls < 120) {",
+                  "    pm.collectionVariables.set('aiPolls', polls);",
+                  "    next(pm.info.requestName);",
+                  "} else {",
+                  "    pm.collectionVariables.unset('aiPolls');",
+                  "    pm.test(`AI evaluation completed (after ${polls} polls)`, () => pm.expect(app.aiStatus, app.aiError).to.eql('Completed'));",
+                  "    pm.test(\"Score is 0-100\", () => pm.expect(app.aiScore).to.be.within(0, 100));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Check score breakdown",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{recruiterToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/recruitment/api/applications/{{applicationId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "const app = pm.response.json();",
+                  "const ai = app.evaluations.find(e => e.source === 'AI');",
+                  "",
+                  "pm.test(\"Has an AI evaluation with a summary\", () => {",
+                  "    pm.expect(ai).to.exist;",
+                  "    pm.expect(ai.comment).to.be.a('string').and.not.empty;",
+                  "});",
+                  "",
+                  "pm.test(\"Breakdown covers every requirement\", () =>",
+                  "    pm.expect(ai.breakdown.map(b => b.name)).to.have.members(['C# / .NET', 'PostgreSQL', 'Kubernetes']));",
+                  "",
+                  "pm.test(\"Levels are from the fixed scale\", () =>",
+                  "    ai.breakdown.forEach(b => pm.expect(['None', 'Weak', 'Partial', 'Full']).to.include(b.level)));",
+                  "",
+                  "// Recompute the score from the stored breakdown: same formula as ScoreCalculator.",
+                  "const value = { None: 0, Weak: 0.25, Partial: 0.6, Full: 1 };",
+                  "let total = 0, achieved = 0, missingRequired = 0;",
+                  "ai.breakdown.forEach(b => {",
+                  "    const w = Math.max(b.weight, 1);",
+                  "    total += w;",
+                  "    achieved += w * value[b.level];",
+                  "    if (b.isRequired && b.level === 'None') missingRequired++;",
+                  "});",
+                  "const expected = Math.round(achieved / total * 100 * Math.pow(0.5, missingRequired));",
+                  "",
+                  "pm.test(`Score ${ai.score} matches the weighted formula (${expected})`, () => pm.expect(ai.score).to.eql(expected));",
+                  "pm.test(\"Application aiScore equals the latest AI evaluation\", () => pm.expect(app.aiScore).to.eql(ai.score));",
+                  "",
+                  "// The fixture CV shows C#/.NET work experience, so the must-have shouldn't be rated None.",
+                  "const dotnet = ai.breakdown.find(b => b.name === 'C# / .NET');",
+                  "pm.test(\"Must-have C#/.NET found in CV\", () => pm.expect(dotnet.level).to.be.oneOf(['Full', 'Partial']));",
+                  "pm.test(\"Evidence given for matched requirements\", () =>",
+                  "    ai.breakdown.filter(b => b.level !== 'None').forEach(b => pm.expect(b.evidence).to.be.a('string').and.not.empty));",
+                  "",
+                  "console.log('AI breakdown', JSON.stringify(ai.breakdown, null, 2));",
+                  "console.log('AI summary', ai.comment);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Re-run AI evaluation (other recruiter) - 404",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{recruiterBToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/recruitment/api/applications/{{applicationId}}/ai-evaluation"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Re-run AI evaluation (author) - 202",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{recruiterToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/recruitment/api/applications/{{applicationId}}/ai-evaluation"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 202\", () => pm.response.to.have.status(202));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "7. Withdraw and cleanup",
+      "description": "Withdrawal rules and deleting test data.",
+      "item": [
+        {
+          "name": "Withdraw application",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{applicantToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/recruitment/api/applications/{{applicationId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Withdraw again - 409",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{applicantToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/recruitment/api/applications/{{applicationId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Status change after withdrawal - 409",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{recruiterToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/recruitment/api/applications/{{applicationId}}/status",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\"status\": \"Hired\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete CV",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{applicantToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/user/api/users/me/cvs/{{cvId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete CV again - 404",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{applicantToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/user/api/users/me/cvs/{{cvId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CV list is empty",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{applicantToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/user/api/users/me/cvs"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"CV row really deleted\", () => pm.expect(pm.response.json()).to.be.empty);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete offer as other recruiter - 403",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{recruiterBToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/offer/offers/{{offerId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete offer (author)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{recruiterToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/offer/offers/{{offerId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

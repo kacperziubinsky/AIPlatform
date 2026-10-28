@@ -1,0 +1,31 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/auth/auth/register'
+order: 1000
+headers:
+  - key: Content-Type
+    value: 'application/json'
+body:
+  type: json
+  content: |-
+    {
+      "email": "Recruiter.{{runId}}@Example.com",
+      "password": "{{password}}",
+      "role": "Recruiter"
+    }
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      // Fresh identities per run so the collection is repeatable.
+      pm.collectionVariables.set('runId', Date.now().toString());
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status 200", () => pm.response.to.have.status(200));
+
+      const body = pm.response.json();
+      pm.test("Returns a token", () => pm.expect(body.token).to.be.a('string').and.not.empty);
+      pm.test("Email is normalized to lowercase", () => pm.expect(body.email).to.eql(`recruiter.${pm.collectionVariables.get('runId')}@example.com`));
+      pm.test("Expiry is in the future", () => pm.expect(new Date(body.expiresAt) > new Date()).to.be.true);
+      pm.collectionVariables.set('recruiterToken', body.token);

@@ -1,0 +1,11 @@
+$kind: collection
+name: AI Platform
+description: |-
+  End-to-end tests through the YARP gateway: Auth -> User -> Offer -> CV -> Recruitment -> AI scoring.
+  Every run registers fresh users (suffix {{runId}}), so it can be repeated against the same database.
+  The "6. AI scoring" folder needs LM Studio running and polls until the CV is parsed and the application scored.
+variables:
+  - key: baseUrl
+    value: 'http://localhost:8080'
+  - key: password
+    value: 'Password123!'

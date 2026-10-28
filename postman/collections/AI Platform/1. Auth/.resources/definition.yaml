@@ -1,0 +1,4 @@
+$kind: collection
+name: '1. Auth'
+description: 'Registration and login status codes, email normalization.'
+order: 1000

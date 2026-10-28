@@ -1,0 +1,16 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/user/api/users/me/cvs/{{cvId}}'
+order: 6000
+headers:
+  - key: Authorization
+    value: 'Bearer {{applicantToken}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status 200", () => pm.response.to.have.status(200));
+
+      const body = pm.response.json();
+      pm.test("Has parseStatus", () => pm.expect(body.parseStatus).to.be.a('string'));
+      pm.test("Data only when completed", () => pm.expect(body.data === null).to.eql(body.parseStatus !== 'Completed'));

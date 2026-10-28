@@ -2,7 +2,7 @@
 
 public enum Experience
 {
-    Trainnee,
+    Trainee,
     Junior,
     Middle,
     Senior,

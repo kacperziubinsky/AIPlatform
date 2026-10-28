@@ -16,7 +16,7 @@ public class JwtService : IJwtService
         _configuration = configuration;
     }
 
-    public string GenerateToken(User user)
+    public (string Token, DateTime ExpiresAt) GenerateToken(User user)
     {
         var claims = new[]
         {
@@ -34,14 +34,17 @@ public class JwtService : IJwtService
         
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
+        var expiryMinutes = int.TryParse(_configuration["JWT:ExpiryMinutes"], out var minutes) ? minutes : 60;
+        var expiresAt = DateTime.UtcNow.AddMinutes(expiryMinutes);
+
         var token = new JwtSecurityToken(
             issuer: _configuration["JWT:Issuer"],
             audience: _configuration["JWT:Audience"],
             claims: claims,
-            expires: DateTime.Now.AddMinutes(60),
+            expires: expiresAt,
             signingCredentials: creds);
         
-        return new JwtSecurityTokenHandler().WriteToken(token);
+        return (new JwtSecurityTokenHandler().WriteToken(token), expiresAt);
 
     }
 }

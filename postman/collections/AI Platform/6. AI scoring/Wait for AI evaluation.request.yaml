@@ -1,0 +1,28 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/recruitment/api/applications/{{applicationId}}'
+order: 2000
+headers:
+  - key: Authorization
+    value: 'Bearer {{recruiterToken}}'
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if (pm.collectionVariables.get('aiPolls')) setTimeout(() => {}, 5000);
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      const next = (pm.execution && pm.execution.setNextRequest) ? pm.execution.setNextRequest : postman.setNextRequest;
+
+      const polls = Number(pm.collectionVariables.get('aiPolls') || 0) + 1;
+      const app = pm.response.json();
+
+      if ((app.aiStatus === 'Pending' || app.aiStatus === 'Processing') && polls < 120) {
+          pm.collectionVariables.set('aiPolls', polls);
+          next(pm.info.requestName);
+      } else {
+          pm.collectionVariables.unset('aiPolls');
+          pm.test(`AI evaluation completed (after ${polls} polls)`, () => pm.expect(app.aiStatus, app.aiError).to.eql('Completed'));
+          pm.test("Score is 0-100", () => pm.expect(app.aiScore).to.be.within(0, 100));
+      }

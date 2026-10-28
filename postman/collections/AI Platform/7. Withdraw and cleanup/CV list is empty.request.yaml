@@ -1,0 +1,13 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/user/api/users/me/cvs'
+order: 6000
+headers:
+  - key: Authorization
+    value: 'Bearer {{applicantToken}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status 200", () => pm.response.to.have.status(200));
+      pm.test("CV row really deleted", () => pm.expect(pm.response.json()).to.be.empty);

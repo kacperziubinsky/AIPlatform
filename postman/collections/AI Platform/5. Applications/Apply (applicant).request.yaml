@@ -1,0 +1,26 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/recruitment/api/applications'
+order: 4000
+headers:
+  - key: Authorization
+    value: 'Bearer {{applicantToken}}'
+  - key: Content-Type
+    value: 'application/json'
+body:
+  type: json
+  content: |-
+    {
+      "offerId": "{{offerId}}",
+      "cvId": "{{cvId}}",
+      "coverLetter": "Chętnie dołączę do zespołu."
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status 201", () => pm.response.to.have.status(201));
+
+      const body = pm.response.json();
+      pm.test("Starts as Submitted", () => pm.expect(body.status).to.eql('Submitted'));
+      pm.collectionVariables.set('applicationId', body.id);

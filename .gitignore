@@ -1,0 +1,12 @@
+bin/
+obj/
+out/
+
+*.nupkg
+*.snupkg
+**/packages/
+!**/packages/build/
+
+
+.idea/
+*.sln.iml

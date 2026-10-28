@@ -43,3 +43,11 @@ C:\Users\Kacper\RiderProjects\AI platform\Gateway\bin\Debug\net10.0\Microsoft.Id
 C:\Users\Kacper\RiderProjects\AI platform\Gateway\bin\Debug\net10.0\Microsoft.IdentityModel.Tokens.dll
 C:\Users\Kacper\RiderProjects\AI platform\Gateway\bin\Debug\net10.0\System.IdentityModel.Tokens.Jwt.dll
 C:\Users\Kacper\RiderProjects\AI platform\Gateway\obj\Debug\net10.0\Gateway.sourcelink.json
+C:\Users\Kacper\AppData\Local\Temp\aiplat-build\appsettings.Development.json
+C:\Users\Kacper\AppData\Local\Temp\aiplat-build\appsettings.json
+C:\Users\Kacper\AppData\Local\Temp\aiplat-build\Gateway.staticwebassets.endpoints.json
+C:\Users\Kacper\AppData\Local\Temp\aiplat-build\Gateway.exe
+C:\Users\Kacper\AppData\Local\Temp\aiplat-build\Gateway.deps.json
+C:\Users\Kacper\AppData\Local\Temp\aiplat-build\Gateway.runtimeconfig.json
+C:\Users\Kacper\AppData\Local\Temp\aiplat-build\Gateway.dll
+C:\Users\Kacper\AppData\Local\Temp\aiplat-build\Gateway.pdb

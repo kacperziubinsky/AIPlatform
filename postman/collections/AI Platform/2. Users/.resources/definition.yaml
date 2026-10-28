@@ -1,0 +1,4 @@
+$kind: collection
+name: '2. Users'
+description: 'Profiles created on registration, onboarding, role checks, internal API hidden by the gateway.'
+order: 2000

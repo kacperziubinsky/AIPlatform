@@ -4,5 +4,5 @@ namespace Auth.Services;
 
 public interface IJwtService
 {
-    string GenerateToken(User user);
+    (string Token, DateTime ExpiresAt) GenerateToken(User user);
 }

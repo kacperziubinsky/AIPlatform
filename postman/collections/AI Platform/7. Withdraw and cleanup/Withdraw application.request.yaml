@@ -1,0 +1,12 @@
+$kind: http-request
+method: DELETE
+url: '{{baseUrl}}/recruitment/api/applications/{{applicationId}}'
+order: 1000
+headers:
+  - key: Authorization
+    value: 'Bearer {{applicantToken}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status 204", () => pm.response.to.have.status(204));

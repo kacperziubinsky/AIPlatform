@@ -1,0 +1,30 @@
+$kind: http-request
+method: PUT
+url: '{{baseUrl}}/user/api/users/me'
+order: 4000
+headers:
+  - key: Authorization
+    value: 'Bearer {{applicantToken}}'
+  - key: Content-Type
+    value: 'application/json'
+body:
+  type: json
+  content: |-
+    {
+      "firstname": "  Jan  ",
+      "lastname": "Testowy",
+      "phone": "+48123456789",
+      "city": "Warszawa",
+      "stack": ["C#", ".NET", "PostgreSQL", "Docker"],
+      "experience": 2
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status 200", () => pm.response.to.have.status(200));
+
+      const body = pm.response.json();
+      pm.test("Names are trimmed", () => pm.expect(body.firstname).to.eql('Jan'));
+      pm.test("City is returned", () => pm.expect(body.city).to.eql('Warszawa'));
+      pm.test("Stack is saved", () => pm.expect(body.stack).to.include('PostgreSQL'));

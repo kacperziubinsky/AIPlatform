@@ -1,0 +1,4 @@
+$kind: collection
+name: '4. CVs'
+description: 'Upload validation, listing with parse status, ownership.'
+order: 4000

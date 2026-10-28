@@ -1,6 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
+using User.DTOs;
 using User.Services;
 
 namespace User.Controllers;
@@ -10,11 +11,13 @@ namespace User.Controllers;
 public class InternalUserController : ControllerBase
 {
     private readonly IUserService _userService;
+    private readonly ICvService _cvService;
     private readonly IConfiguration _configuration;
 
-    public InternalUserController(IUserService userService, IConfiguration configuration)
+    public InternalUserController(IUserService userService, ICvService cvService, IConfiguration configuration)
     {
         _userService = userService;
+        _cvService = cvService;
         _configuration = configuration;
     }
 
@@ -29,6 +32,16 @@ public class InternalUserController : ControllerBase
 
         var created = await _userService.CreateUserAsync(userId);
         return created ? StatusCode(201) : NoContent();
+    }
+
+    [HttpGet("{userId:guid}/cvs/{cvId:guid}")]
+    public async Task<ActionResult<CvDetailsResponse>> GetCvAsync(Guid userId, Guid cvId)
+    {
+        if (!IsValidApiKey())
+            return Unauthorized();
+
+        var cv = await _cvService.GetCvAsync(userId, cvId);
+        return cv is null ? NotFound() : Ok(cv);
     }
 
     private bool IsValidApiKey()

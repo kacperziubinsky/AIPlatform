@@ -1,0 +1,18 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/user/api/users/me/cvs'
+order: 2000
+headers:
+  - key: Authorization
+    value: 'Bearer {{applicantToken}}'
+body:
+  type: formdata
+  content:
+    - key: note
+      type: text
+      value: 'no file here'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status 400", () => pm.response.to.have.status(400));

@@ -27,6 +27,7 @@ public class OfferService : IOfferService
             Salary = request.Salary,
             Category = request.Category,
             Stack = request.Stack ?? new List<string>(),
+            Requirements = MapRequirements(request.Requirements),
             Experience = request.Experience,
             StartDate = request.StartDate,
             EndDate = request.EndDate,
@@ -64,10 +65,9 @@ public class OfferService : IOfferService
 
             if (filter.Experience.HasValue)
             {
-                query = query.Where(o => o.Experience == filter.Experience.Value); // Poprawiono z >= na ==
+                query = query.Where(o => o.Experience == filter.Experience.Value);
             }
 
-            // POPRAWIONE: Min i Max Salary
             if (filter.MinSalary.HasValue)
             {
                 query = query.Where(o => o.Salary >= filter.MinSalary.Value);
@@ -85,12 +85,14 @@ public class OfferService : IOfferService
             .Select(o => new OfferResponse
             {
                 Id = o.Id,
+                AuthorId = o.AuthorId,
                 Title = o.Title,
                 Description = o.Description,
                 Salary = o.Salary,
                 Category = o.Category,
                 Stack = o.Stack,
                 Experience = o.Experience,
+                Requirements = o.Requirements,
                 StartDate = o.StartDate,
                 EndDate = o.EndDate,
                 CreatedOn = o.CreatedOn,
@@ -107,7 +109,7 @@ public class OfferService : IOfferService
     public async Task<OfferResponse?> GetOfferByIdAsync(Guid id)
     {
         var offer = await _dbContext.Offers
-            .AsNoTracking() // Dodano AsNoTracking dla optymalizacji
+            .AsNoTracking()
             .FirstOrDefaultAsync(o => o.Id == id);
 
         if (offer == null)
@@ -139,6 +141,7 @@ public class OfferService : IOfferService
         offer.Salary = request.Salary;
         offer.Category = request.Category;
         offer.Stack = request.Stack ?? new List<string>();
+        offer.Requirements = MapRequirements(request.Requirements);
         offer.Experience = request.Experience;
         offer.StartDate = request.StartDate;
         offer.EndDate = request.EndDate;
@@ -169,8 +172,6 @@ public class OfferService : IOfferService
         return true;
     }
 
-    // --- HELPER METHODS ---
-
     private static void ValidateOfferData(string title, string description, object category, object experience, DateTime startDate, DateTime endDate)
     {
         if (string.IsNullOrWhiteSpace(title))
@@ -192,11 +193,33 @@ public class OfferService : IOfferService
             throw new ArgumentException("End date must be strictly after Start date.");
     }
 
+    private static List<Requirement> MapRequirements(List<Requirement>? requirements)
+    {
+        if (requirements == null)
+            return new List<Requirement>();
+
+        foreach (var r in requirements)
+        {
+            if (string.IsNullOrWhiteSpace(r.Name))
+                throw new ArgumentException("Requirement name cannot be empty.");
+        }
+
+        return requirements.Select(r => new Requirement
+        {
+            Id = Guid.NewGuid(),
+            Name = r.Name.Trim(),
+            Description = r.Description?.Trim() ?? string.Empty,
+            Weight = r.Weight,
+            IsRequired = r.IsRequired
+        }).ToList();
+    }
+
     private static OfferResponse MapToOfferResponse(JobOffer offer)
     {
         return new OfferResponse
         {
             Id = offer.Id,
+            AuthorId = offer.AuthorId,
             Title = offer.Title,
             Description = offer.Description,
             Salary = offer.Salary,
@@ -206,7 +229,8 @@ public class OfferService : IOfferService
             EndDate = offer.EndDate,
             Company = offer.Company,
             CreatedOn = offer.CreatedOn,
-            Stack = offer.Stack
+            Stack = offer.Stack,
+            Requirements = offer.Requirements
         };
     }
 }

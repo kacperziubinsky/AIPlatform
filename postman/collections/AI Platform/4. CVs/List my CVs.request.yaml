@@ -1,0 +1,17 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/user/api/users/me/cvs'
+order: 5000
+headers:
+  - key: Authorization
+    value: 'Bearer {{applicantToken}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status 200", () => pm.response.to.have.status(200));
+
+      const cvs = pm.response.json();
+      pm.test("Has exactly the uploaded CV", () => pm.expect(cvs).to.have.lengthOf(1));
+      pm.test("Shows parse status", () => pm.expect(['Pending', 'Processing', 'Completed', 'Failed']).to.include(cvs[0].parseStatus));
+      pm.collectionVariables.set('cvId', cvs[0].id);

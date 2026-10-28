@@ -131,3 +131,24 @@ C:\Users\Kacper\RiderProjects\AI platform\Auth\bin\Debug\net10.0\tr\Microsoft.Co
 C:\Users\Kacper\RiderProjects\AI platform\Auth\bin\Debug\net10.0\zh-Hans\Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll
 C:\Users\Kacper\RiderProjects\AI platform\Auth\bin\Debug\net10.0\zh-Hant\Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll
 C:\Users\Kacper\RiderProjects\AI platform\Auth\bin\Debug\net10.0\appsettings.Production.json
+C:\Users\Kacper\RiderProjects\AI platform\Auth\bin\Debug\net10.0\Microsoft.Extensions.AmbientMetadata.Application.dll
+C:\Users\Kacper\RiderProjects\AI platform\Auth\bin\Debug\net10.0\Microsoft.Extensions.Compliance.Abstractions.dll
+C:\Users\Kacper\RiderProjects\AI platform\Auth\bin\Debug\net10.0\Microsoft.Extensions.DependencyInjection.AutoActivation.dll
+C:\Users\Kacper\RiderProjects\AI platform\Auth\bin\Debug\net10.0\Microsoft.Extensions.Diagnostics.ExceptionSummarization.dll
+C:\Users\Kacper\RiderProjects\AI platform\Auth\bin\Debug\net10.0\Microsoft.Extensions.Http.Diagnostics.dll
+C:\Users\Kacper\RiderProjects\AI platform\Auth\bin\Debug\net10.0\Microsoft.Extensions.Http.Resilience.dll
+C:\Users\Kacper\RiderProjects\AI platform\Auth\bin\Debug\net10.0\Microsoft.Extensions.Resilience.dll
+C:\Users\Kacper\RiderProjects\AI platform\Auth\bin\Debug\net10.0\Microsoft.Extensions.Telemetry.dll
+C:\Users\Kacper\RiderProjects\AI platform\Auth\bin\Debug\net10.0\Microsoft.Extensions.Telemetry.Abstractions.dll
+C:\Users\Kacper\RiderProjects\AI platform\Auth\bin\Debug\net10.0\Polly.Core.dll
+C:\Users\Kacper\RiderProjects\AI platform\Auth\bin\Debug\net10.0\Polly.Extensions.dll
+C:\Users\Kacper\RiderProjects\AI platform\Auth\bin\Debug\net10.0\Polly.RateLimiting.dll
+C:\Users\Kacper\AppData\Local\Temp\aiplat-build\appsettings.Development.json
+C:\Users\Kacper\AppData\Local\Temp\aiplat-build\appsettings.json
+C:\Users\Kacper\AppData\Local\Temp\aiplat-build\appsettings.Production.json
+C:\Users\Kacper\AppData\Local\Temp\aiplat-build\Auth.staticwebassets.endpoints.json
+C:\Users\Kacper\AppData\Local\Temp\aiplat-build\Auth.exe
+C:\Users\Kacper\AppData\Local\Temp\aiplat-build\Auth.deps.json
+C:\Users\Kacper\AppData\Local\Temp\aiplat-build\Auth.runtimeconfig.json
+C:\Users\Kacper\AppData\Local\Temp\aiplat-build\Auth.dll
+C:\Users\Kacper\AppData\Local\Temp\aiplat-build\Auth.pdb

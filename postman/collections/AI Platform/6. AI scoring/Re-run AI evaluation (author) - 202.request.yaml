@@ -1,0 +1,12 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/recruitment/api/applications/{{applicationId}}/ai-evaluation'
+order: 5000
+headers:
+  - key: Authorization
+    value: 'Bearer {{recruiterToken}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status 202", () => pm.response.to.have.status(202));

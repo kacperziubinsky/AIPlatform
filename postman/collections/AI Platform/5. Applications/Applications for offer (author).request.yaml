@@ -1,0 +1,16 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/recruitment/api/offers/{{offerId}}/applications'
+order: 7000
+headers:
+  - key: Authorization
+    value: 'Bearer {{recruiterToken}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status 200", () => pm.response.to.have.status(200));
+
+      const apps = pm.response.json();
+      pm.test("Sees the application", () => pm.expect(apps.map(a => a.id)).to.include(pm.collectionVariables.get('applicationId')));
+      pm.test("Exposes AI status", () => pm.expect(apps[0]).to.have.property('aiStatus'));

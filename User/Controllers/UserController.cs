@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+﻿using User.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using User.DTOs;
@@ -37,7 +37,7 @@ public class UserController : ControllerBase
     [HttpGet("me")]
     public async Task<ActionResult<UserResponse>> GetMeAsync()
     {
-        var userId = GetUserIdFromClaims();
+        var userId = User.GetUserId();
         if (userId is null)
             return Unauthorized("Invalid user token claim.");
 
@@ -48,19 +48,12 @@ public class UserController : ControllerBase
     [HttpPut("me")]
     public async Task<ActionResult<UserResponse>> UpdateMeAsync(UpdateUserRequest request)
     {
-        var userId = GetUserIdFromClaims();
+        var userId = User.GetUserId();
         if (userId is null)
             return Unauthorized("Invalid user token claim.");
 
         var user = await _userService.UpdateUserAsync(userId.Value, request);
         return Ok(user);
     }
-
-    private Guid? GetUserIdFromClaims()
-    {
-        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier)
-                    ?? User.FindFirstValue("sub");
-
-        return Guid.TryParse(claim, out var id) ? id : null;
-    }
+    
 }

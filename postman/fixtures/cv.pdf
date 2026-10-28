@@ -1,0 +1,57 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 923 >>
+stream
+BT
+/F1 11 Tf
+14 TL
+50 790 Td
+(Jan Testowy) Tj T*
+(jan.testowy@example.com | +48 600 000 000 | Warszawa) Tj T*
+() Tj T*
+(Doswiadczenie zawodowe) Tj T*
+(Senior .NET Developer - Example Software Sp. z o.o. \(2021-03 - obecnie\)) Tj T*
+(- Projektowanie mikroserwisow w C# i ASP.NET Core 8) Tj T*
+(- Bazy danych PostgreSQL: projektowanie schematow, optymalizacja zapytan, EF Core) Tj T*
+(- Konteneryzacja aplikacji w Docker, CI/CD w GitHub Actions) Tj T*
+() Tj T*
+(Junior .NET Developer - Demo Systems S.A. \(2018-07 - 2021-02\)) Tj T*
+(- Rozwoj REST API w .NET Core, testy jednostkowe xUnit) Tj T*
+(- Zapytania SQL w Microsoft SQL Server) Tj T*
+() Tj T*
+(Wyksztalcenie) Tj T*
+(Magister - Politechnika Warszawska, Informatyka) Tj T*
+() Tj T*
+(Umiejetnosci) Tj T*
+(C#, .NET, ASP.NET Core, Entity Framework Core, PostgreSQL, SQL Server, Docker, Git, REST) Tj T*
+() Tj T*
+(Jezyki) Tj T*
+(Polski - ojczysty, Angielski - C1) Tj T*
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000001215 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+1312
+%%EOF

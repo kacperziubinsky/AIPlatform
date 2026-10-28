@@ -1,0 +1,4 @@
+$kind: collection
+name: '3. Offers'
+description: 'Recruiter-only writes, author-only edits, validation, public browsing.'
+order: 3000

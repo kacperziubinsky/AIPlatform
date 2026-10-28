@@ -1,0 +1,4 @@
+$kind: collection
+name: '7. Withdraw and cleanup'
+description: 'Withdrawal rules and deleting test data.'
+order: 7000

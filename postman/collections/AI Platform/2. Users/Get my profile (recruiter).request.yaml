@@ -1,0 +1,13 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/user/api/users/me'
+order: 3000
+headers:
+  - key: Authorization
+    value: 'Bearer {{recruiterToken}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status 200", () => pm.response.to.have.status(200));
+      pm.collectionVariables.set('recruiterId', pm.response.json().id);

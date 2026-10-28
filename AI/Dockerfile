@@ -1,4 +1,4 @@
-﻿FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 USER $APP_UID
 WORKDIR /app
 EXPOSE 8080
@@ -7,17 +7,17 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["Applicant/Applicant.csproj", "Applicant/"]
-RUN dotnet restore "Applicant/Applicant.csproj"
+COPY ["AI/AI.csproj", "AI/"]
+RUN dotnet restore "AI/AI.csproj"
 COPY . .
-WORKDIR "/src/Applicant"
-RUN dotnet build "Applicant.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "/src/AI"
+RUN dotnet build "AI.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "Applicant.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "AI.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Applicant.dll"]
+ENTRYPOINT ["dotnet", "AI.dll"]

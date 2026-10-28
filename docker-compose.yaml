@@ -1,4 +1,4 @@
-﻿services:
+services:
   gateway:
     container_name: gateway-service
     build:
@@ -10,6 +10,7 @@
       - auth
       - offer
       - user
+      - recruitment
 
   auth:
     container_name: auth-servicels
@@ -40,8 +41,37 @@
     environment:
       InternalApiKey: "dev-internal-key-change-me"
       ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=user_db;Username=postgres;Password=admin123"
+      Services__AiUrl: "http://ai:8080/"
     depends_on:
       - db
+      - ai
+
+  recruitment:
+    container_name: recruitment-service
+    build:
+      context: .
+      dockerfile: Recruitment/Dockerfile
+    environment:
+      InternalApiKey: "dev-internal-key-change-me"
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=recruitment_db;Username=postgres;Password=admin123"
+      Services__OfferUrl: "http://offer:8080/"
+      Services__UserUrl: "http://user:8080/"
+      Services__AiUrl: "http://ai:8080/"
+    depends_on:
+      - db
+      - offer
+      - user
+      - ai
+
+  ai:
+    container_name: ai-service
+    build:
+      context: .
+      dockerfile: AI/Dockerfile
+    environment:
+      Llm__Url: "http://host.docker.internal:1234/api/v1/chat"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   db:
     image: postgres:17-alpine

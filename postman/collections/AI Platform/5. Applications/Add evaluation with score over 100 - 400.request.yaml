@@ -1,0 +1,21 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/recruitment/api/applications/{{applicationId}}/evaluations'
+order: 15000
+headers:
+  - key: Authorization
+    value: 'Bearer {{recruiterToken}}'
+  - key: Content-Type
+    value: 'application/json'
+body:
+  type: json
+  content: |-
+    {
+    "score": 150,
+    "comment": "Too high"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status 400", () => pm.response.to.have.status(400));

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Offer.Models;
 using Offer.Models.Enums;
 namespace Offer.DTOs;
 
@@ -16,6 +17,7 @@ public record CreateOfferRequest
     public List<String> Stack { get; set; } = new List<string>();
     [Required]
     public Experience Experience { get; set; }
+    public List<Requirement> Requirements { get; set; } = new();
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public string? Company { get; set; }

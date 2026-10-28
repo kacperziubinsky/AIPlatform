@@ -23,8 +23,7 @@ public class UserService : IUserService
             return false;
         }
 
-        UserProfile account = new UserProfile();
-        account.Id = Guid.NewGuid();
+        UserProfile account = new UserProfile { Id = userId };
         
         _context.Users.Add(account);
         await _context.SaveChangesAsync();
@@ -37,9 +36,11 @@ public class UserService : IUserService
         return await _context.Users
             .Select(u => new UserResponse
             {
+                Id = u.Id,
                 Firstname = u.Firstname,
                 Lastname = u.Lastname,
                 Phone = u.Phone,
+                City = u.City,
                 Stack = u.Stack,
                 Experience = u.Experience
             })
@@ -52,9 +53,11 @@ public class UserService : IUserService
             .Where(u => u.Id == userId)
             .Select(u => new UserResponse
             {
+                Id = u.Id,
                 Firstname = u.Firstname,
                 Lastname = u.Lastname,
                 Phone = u.Phone,
+                City = u.City,
                 Stack = u.Stack,
                 Experience = u.Experience
             })

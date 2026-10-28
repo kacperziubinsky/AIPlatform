@@ -1,0 +1,49 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/recruitment/api/applications/{{applicationId}}'
+order: 3000
+headers:
+  - key: Authorization
+    value: 'Bearer {{recruiterToken}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status 200", () => pm.response.to.have.status(200));
+
+      const app = pm.response.json();
+      const ai = app.evaluations.find(e => e.source === 'AI');
+
+      pm.test("Has an AI evaluation with a summary", () => {
+          pm.expect(ai).to.exist;
+          pm.expect(ai.comment).to.be.a('string').and.not.empty;
+      });
+
+      pm.test("Breakdown covers every requirement", () =>
+          pm.expect(ai.breakdown.map(b => b.name)).to.have.members(['C# / .NET', 'PostgreSQL', 'Kubernetes']));
+
+      pm.test("Levels are from the fixed scale", () =>
+          ai.breakdown.forEach(b => pm.expect(['None', 'Weak', 'Partial', 'Full']).to.include(b.level)));
+
+      // Recompute the score from the stored breakdown: same formula as ScoreCalculator.
+      const value = { None: 0, Weak: 0.25, Partial: 0.6, Full: 1 };
+      let total = 0, achieved = 0, missingRequired = 0;
+      ai.breakdown.forEach(b => {
+          const w = Math.max(b.weight, 1);
+          total += w;
+          achieved += w * value[b.level];
+          if (b.isRequired && b.level === 'None') missingRequired++;
+      });
+      const expected = Math.round(achieved / total * 100 * Math.pow(0.5, missingRequired));
+
+      pm.test(`Score ${ai.score} matches the weighted formula (${expected})`, () => pm.expect(ai.score).to.eql(expected));
+      pm.test("Application aiScore equals the latest AI evaluation", () => pm.expect(app.aiScore).to.eql(ai.score));
+
+      // The fixture CV shows C#/.NET work experience, so the must-have shouldn't be rated None.
+      const dotnet = ai.breakdown.find(b => b.name === 'C# / .NET');
+      pm.test("Must-have C#/.NET found in CV", () => pm.expect(dotnet.level).to.be.oneOf(['Full', 'Partial']));
+      pm.test("Evidence given for matched requirements", () =>
+          ai.breakdown.filter(b => b.level !== 'None').forEach(b => pm.expect(b.evidence).to.be.a('string').and.not.empty));
+
+      console.log('AI breakdown', JSON.stringify(ai.breakdown, null, 2));
+      console.log('AI summary', ai.comment);

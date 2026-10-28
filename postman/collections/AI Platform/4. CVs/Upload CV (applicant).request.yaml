@@ -1,0 +1,18 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/user/api/users/me/cvs'
+order: 4000
+headers:
+  - key: Authorization
+    value: 'Bearer {{applicantToken}}'
+body:
+  type: formdata
+  content:
+    - key: file
+      type: file
+      src: 'postman/fixtures/cv.pdf'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status 201", () => pm.response.to.have.status(201));

@@ -1,0 +1,317 @@
+@GatewayUrl = http://127.0.0.1:8080
+
+# Wklej tokeny z odpowiedzi logowania (KROK 3 i KROK 4)
+@recruiterToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmMDVlOWYxNC1mOThhLTQyNjUtOGNmMS04YTA5Y2ViMWI1ZGIiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJyZWNydWl0ZXIua2FjcGVyQGV4YW1wbGUuY29tIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiUmVjcnVpdGVyIiwiZXhwIjoxNzkxMzk0NTYxLCJpc3MiOiJBSSBQbGF0Zm9ybSIsImF1ZCI6IkFJIFBsYXRmb3JtIn0.KHcxieRqJtSwu5gZRD4sDYisX83RE7CO7NEYuTdAt3s
+@candidateToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyODVkZDliYy0zZWY1LTQ3NzMtYWIwZi00OGJkOThiY2EwZDkiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJjYW5kaWRhdGVlZWVlLmthY3BlckBleGFtcGxlLmNvbSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IkFwcGxpY2FudCIsImV4cCI6MTc5MTM5NTE0NywiaXNzIjoiQUkgUGxhdGZvcm0iLCJhdWQiOiJBSSBQbGF0Zm9ybSJ9.Z0WLSe9_OtLMzwJBO3-AHodjGZkE4eFFc0xYmwPs8UA
+# Wklej ID z odpowiedzi
+@createdOfferId = 44802ab1-d715-4793-a121-660a4d2208d6
+@candidateId = 00-897f479a08a22f384bdd3ba6ab8d584f-ce714d0e21c2b833-00
+
+
+### ==================================================================
+### 1. AUTH SERVICE - Rejestracja i logowanie
+### ==================================================================
+
+### KROK 1: Rejestracja rekrutera
+POST {{GatewayUrl}}/auth/auth/register
+Content-Type: application/json
+
+{
+  "email": "recruiter.kacper@example.com",
+  "password": "Password123!",
+  "role": "Recruiter"
+}
+
+###
+
+### KROK 2: Rejestracja kandydata
+# 💡 Auth po rejestracji tworzy pusty profil w User Service (wewnętrzny request)
+POST {{GatewayUrl}}/auth/auth/register
+Content-Type: application/json
+
+{
+  "email": "candidateeeee.kacper@example.com",
+  "password": "Password123!",
+  "role": "Applicant"
+}
+
+<> 2026-10-07T184510.200.json
+<> 2026-10-07T182409.200.json
+<> 2026-10-07T182345.400.json
+<> 2026-10-07T182304.400.json
+
+###
+
+### KROK 3: Logowanie rekrutera
+# 💡 Skopiuj "token" do @recruiterToken
+POST {{GatewayUrl}}/auth/auth/login
+Content-Type: application/json
+
+{
+  "email": "recruiter.kacper@example.com",
+  "password": "Password123!"
+}
+
+<> 2026-10-07T183601.200.json
+<> 2026-10-07T183235.200.json
+<> 2026-10-07T182902.200.json
+<> 2026-10-07T182322.200.json
+
+###
+
+### KROK 4: Logowanie kandydata
+# 💡 Skopiuj "token" do @candidateToken
+POST {{GatewayUrl}}/auth/auth/login
+Content-Type: application/json
+
+{
+  "email": "candidateeeee.kacper@example.com",
+  "password": "Password123!"
+}
+
+<> 2026-10-07T184547.200.json
+<> 2026-10-07T182923.200.json
+<> 2026-10-07T182432.200.json
+
+###
+
+### KROK 5: Rejestracja z zajętym e-mailem (oczekiwane 409)
+POST {{GatewayUrl}}/auth/auth/register
+Content-Type: application/json
+
+{
+  "email": "candidate.kacper@example.com",
+  "password": "Password123!",
+  "role": "Applicant"
+}
+
+<> 2026-10-07T182436.400.json
+
+###
+
+### KROK 6: Próba rejestracji jako Admin (oczekiwane 400)
+POST {{GatewayUrl}}/auth/auth/register
+Content-Type: application/json
+
+{
+  "email": "hacker@example.com",
+  "password": "Password123!",
+  "role": "Admin"
+}
+
+<> 2026-10-07T184615.400.json
+<> 2026-10-07T182510.400.json
+
+
+### ==================================================================
+### 2. USER SERVICE - Profil kandydata
+### ==================================================================
+
+### KROK 7: Mój profil (kandydat)
+# 💡 Skopiuj "id" do @candidateId
+GET {{GatewayUrl}}/user/api/users/me
+Authorization: Bearer {{candidateToken}}
+
+<> 2026-10-07T184619.404.json
+
+###
+
+### KROK 8: Uzupełnienie profilu - onboarding (kandydat)
+PUT {{GatewayUrl}}/user/api/users/me
+Authorization: Bearer {{candidateToken}}
+Content-Type: application/json
+
+{
+  "firstname": "Kacper",
+  "lastname": "Dev",
+  "phone": "+48123456789",
+  "city": "Warszawa",
+  "stack": ["C#", ".NET", "PostgreSQL", "Docker"],
+  "experience": 2
+}
+
+<> 2026-10-07T184630.200.json
+<> 2026-10-07T184356.200.json
+
+###
+
+### KROK 9: Walidacja - za długie imię i zły enum (oczekiwane 400)
+PUT {{GatewayUrl}}/user/api/users/me
+Authorization: Bearer {{candidateToken}}
+Content-Type: application/json
+
+{
+  "firstname": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+  "lastname": "Dev",
+  "experience": 99
+}
+
+###
+
+### KROK 10: Lista kandydatów (rekruter)
+GET {{GatewayUrl}}/user/api/users
+Authorization: Bearer {{recruiterToken}}
+
+<> 2026-10-07T184637.200.json
+<> 2026-10-07T184519.200.json
+<> 2026-10-07T184402.200.json
+<> 2026-10-07T184346.200.json
+
+###
+
+### KROK 11: Profil kandydata po ID (rekruter)
+GET {{GatewayUrl}}/user/api/users/{{candidateId}}
+Authorization: Bearer {{recruiterToken}}
+
+###
+
+### KROK 12: Kandydat próbuje pobrać listę (oczekiwane 403)
+GET {{GatewayUrl}}/user/api/users
+Authorization: Bearer {{candidateToken}}
+
+###
+
+### KROK 13: Bez tokena (oczekiwane 401)
+GET {{GatewayUrl}}/user/api/users/me
+
+###
+
+### KROK 14: Endpoint internal NIE jest dostępny przez gateway (oczekiwane 404)
+POST {{GatewayUrl}}/user/internal/users/{{candidateId}}
+X-Api-Key: dev-internal-key-change-me
+
+
+### ==================================================================
+### 3. OFFER SERVICE - Działania na ofertach
+### ==================================================================
+
+### KROK 15: Tworzenie nowej oferty (rekruter)
+# 💡 Skopiuj "id" utworzonej oferty do @createdOfferId
+POST {{GatewayUrl}}/offer/offers
+Authorization: Bearer {{recruiterToken}}
+Content-Type: application/json
+
+{
+  "title": "Senior .NET Core Developer",
+  "description": "Poszukujemy doświadczonego programisty .NET do rozwoju mikroserwisów i architektury YARP.",
+  "salary": 18000,
+  "category": 0,
+  "experience": 2,
+  "stack": ["C#", ".NET 10", "PostgreSQL", "Docker", "YARP"],
+  "startDate": "2026-11-01T00:00:00Z",
+  "endDate": "2026-12-01T00:00:00Z",
+  "company": "Tech Corp Sp. z o.o."
+}
+
+<> 2026-10-07T184427.201.json
+
+###
+
+### KROK 16: Wszystkie aktywne oferty z filtrami (publiczne)
+GET {{GatewayUrl}}/offer/offers?searchTerm=Developer&category=0&minSalary=5000&limit=10
+
+<> 2026-10-07T184439.200.json
+<> 2026-10-07T184432.200.json
+
+###
+
+### KROK 17: Pojedyncza oferta po ID (publiczne)
+GET {{GatewayUrl}}/offer/offers/{{createdOfferId}}
+
+<> 2026-10-07T184434.404.txt
+
+###
+
+### KROK 18: Edycja oferty (rekruter, autor)
+PUT {{GatewayUrl}}/offer/offers/{{createdOfferId}}
+Authorization: Bearer {{recruiterToken}}
+Content-Type: application/json
+
+{
+  "title": "Lead .NET Core Developer",
+  "description": "Zaktualizowany opis — poszukiwany Team Lead z doświadczeniem w mikroserwisach.",
+  "salary": 22000,
+  "category": 0,
+  "experience": 3,
+  "stack": ["C#", ".NET 10", "YARP", "PostgreSQL", "Docker"],
+  "startDate": "2026-11-01T00:00:00Z",
+  "endDate": "2026-12-15T00:00:00Z",
+  "company": "Tech Corp Global"
+}
+
+###
+
+### KROK 19: Kandydat próbuje utworzyć ofertę (oczekiwane 403)
+POST {{GatewayUrl}}/offer/offers
+Authorization: Bearer {{candidateToken}}
+Content-Type: application/json
+
+{
+  "title": "Fake offer",
+  "description": "Nie powinno przejść.",
+  "salary": 1000,
+  "category": 0,
+  "experience": 0,
+  "stack": ["C#"],
+  "startDate": "2026-11-01T00:00:00Z",
+  "endDate": "2026-12-01T00:00:00Z",
+  "company": "Nobody"
+}
+
+###
+
+### KROK 20: Usunięcie oferty (rekruter, autor)
+DELETE {{GatewayUrl}}/offer/offers/{{createdOfferId}}
+Authorization: Bearer {{recruiterToken}}
+
+
+### ==================================================================
+### 4. CV + RECRUITMENT - Aplikacja i ocena AI
+### ==================================================================
+# Wymaga LM Studio na porcie 1234. Ocena działa w tle: aplikacja -> parsowanie CV -> ocena AI -> wynik.
+@cvId = 00000000-0000-0000-0000-000000000000
+@applicationId = 00000000-0000-0000-0000-000000000000
+
+### KROK 21: Upload CV (kandydat, tylko PDF jest parsowany przez AI)
+POST {{GatewayUrl}}/user/api/users/me/cvs
+Authorization: Bearer {{candidateToken}}
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="CV.pdf"
+Content-Type: application/pdf
+
+< ./CV.pdf
+--boundary--
+
+###
+
+### KROK 22: Lista moich CV (kandydat) - skopiuj "id" do @cvId
+GET {{GatewayUrl}}/user/api/users/me/cvs
+Authorization: Bearer {{candidateToken}}
+
+###
+
+### KROK 23: Aplikowanie na ofertę (kandydat) - skopiuj "id" do @applicationId
+POST {{GatewayUrl}}/recruitment/api/applications
+Authorization: Bearer {{candidateToken}}
+Content-Type: application/json
+
+{
+  "offerId": "{{createdOfferId}}",
+  "cvId": "{{cvId}}",
+  "coverLetter": "Chętnie dołączę do zespołu."
+}
+
+###
+
+### KROK 24: Ranking aplikacji na ofertę wg AI score (rekruter)
+# aiStatus: Pending -> Processing -> Completed | Failed; breakdown = ocena każdego wymagania
+GET {{GatewayUrl}}/recruitment/api/offers/{{createdOfferId}}/applications
+Authorization: Bearer {{recruiterToken}}
+
+###
+
+### KROK 25: Ponowna ocena AI (rekruter, np. po edycji wymagań oferty) - oczekiwane 202
+POST {{GatewayUrl}}/recruitment/api/applications/{{applicationId}}/ai-evaluation
+Authorization: Bearer {{recruiterToken}}

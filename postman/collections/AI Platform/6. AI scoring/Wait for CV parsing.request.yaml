@@ -1,0 +1,29 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/user/api/users/me/cvs/{{cvId}}'
+order: 1000
+headers:
+  - key: Authorization
+    value: 'Bearer {{applicantToken}}'
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      // Wait between polls (not before the first one).
+      if (pm.collectionVariables.get('cvPolls')) setTimeout(() => {}, 5000);
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      const next = (pm.execution && pm.execution.setNextRequest) ? pm.execution.setNextRequest : postman.setNextRequest;
+
+      const polls = Number(pm.collectionVariables.get('cvPolls') || 0) + 1;
+      const status = pm.response.json().parseStatus;
+
+      if ((status === 'Pending' || status === 'Processing') && polls < 60) {
+          pm.collectionVariables.set('cvPolls', polls);
+          next(pm.info.requestName);
+      } else {
+          pm.collectionVariables.unset('cvPolls');
+          pm.test(`CV parsed (after ${polls} polls)`, () => pm.expect(status, pm.response.json().parseError).to.eql('Completed'));
+          pm.test("Skills were extracted", () => pm.expect(pm.response.json().data.skills).to.not.be.empty);
+      }

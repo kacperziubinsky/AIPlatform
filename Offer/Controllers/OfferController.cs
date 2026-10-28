@@ -18,7 +18,7 @@ public class OfferController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = "Recruiter")]
     public async Task<ActionResult<OfferResponse>> CreateOffer([FromBody] CreateOfferRequest request)
     {
         var userId = GetUserIdFromClaims();
@@ -27,8 +27,15 @@ public class OfferController : ControllerBase
             return Unauthorized("Invalid user token claim.");
         }
 
-        var offer = await _offerService.CreateOfferAsync(request, userId.Value);
-        return CreatedAtAction(nameof(GetOfferById), new { id = offer.Id }, offer);
+        try
+        {
+            var offer = await _offerService.CreateOfferAsync(request, userId.Value);
+            return CreatedAtAction(nameof(GetOfferById), new { id = offer.Id }, offer);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     [HttpGet]
@@ -51,7 +58,7 @@ public class OfferController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
-    [Authorize]
+    [Authorize(Roles = "Recruiter")]
     public async Task<ActionResult<OfferResponse>> UpdateOffer(Guid id, [FromBody] UpdateOfferRequest request)
     {
         var userId = GetUserIdFromClaims();
@@ -80,7 +87,7 @@ public class OfferController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    [Authorize]
+    [Authorize(Roles = "Recruiter")]
     public async Task<IActionResult> DeleteOffer(Guid id)
     {
         var userId = GetUserIdFromClaims();

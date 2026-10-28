@@ -1,0 +1,4 @@
+$kind: collection
+name: '6. AI scoring'
+description: 'Needs LM Studio. Polls until the CV is parsed and the application is scored, then checks the math.'
+order: 6000
