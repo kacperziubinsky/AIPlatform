@@ -5,9 +5,7 @@ using Recruitment.Services;
 
 namespace Recruitment.Workers;
 
-/// <summary>
-/// Picks up applications waiting for AI evaluation, one at a time, oldest first.
-/// </summary>
+
 public class AiEvaluationWorker(IServiceScopeFactory scopeFactory, ILogger<AiEvaluationWorker> logger) : BackgroundService
 {
     private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(10);
@@ -33,7 +31,6 @@ public class AiEvaluationWorker(IServiceScopeFactory scopeFactory, ILogger<AiEva
         }
     }
 
-    // Applications left in Processing were interrupted by a shutdown. Assumes a single Recruitment instance.
     private async Task RequeueInterruptedAsync(CancellationToken ct)
     {
         try
@@ -76,7 +73,6 @@ public class AiEvaluationWorker(IServiceScopeFactory scopeFactory, ILogger<AiEva
         if (claimed == 0)
             return true;
 
-        // Load after claiming so the tracked original value is Processing and a reset to Pending gets saved.
         var application = await db.Applications.FirstAsync(a => a.Id == applicationId, ct);
 
         await evaluator.EvaluateAsync(application, ct);
