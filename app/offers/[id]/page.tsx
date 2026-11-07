@@ -4,6 +4,7 @@ import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import { JobOffer } from "@/types/offer";
 import { fetchJobOfferById } from "@/services/offer-service";
+import CreateApplicationModal from "@/components/modals/CreateApplicationModal";
 
 interface SingleOfferPageProps {
   params: Promise<{ id: string }>;
@@ -15,6 +16,7 @@ export default function SingleOfferPage({ params }: SingleOfferPageProps) {
   const [offer, setOffer] = useState<JobOffer | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isApplyOpen, setIsApplyOpen] = useState(false);
 
   useEffect(() => {
     const loadOffer = async () => {
@@ -49,6 +51,7 @@ export default function SingleOfferPage({ params }: SingleOfferPageProps) {
 
   if (error || !offer) {
     return (
+      
       <main className="container mx-auto px-4 py-12 max-w-4xl text-center">
         <div className="p-6 bg-red-50 border border-red-200 rounded-xl text-red-700 mb-6">
           {error || "Oferta nie istnieje."}
@@ -65,7 +68,6 @@ export default function SingleOfferPage({ params }: SingleOfferPageProps) {
 
   return (
     <main className="container mx-auto px-4 py-8 max-w-4xl">
-      {/* Powrót */}
       <Link
         href="/offers"
         className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 mb-6 transition-colors"
@@ -76,9 +78,14 @@ export default function SingleOfferPage({ params }: SingleOfferPageProps) {
         Powrót do listy ofert
       </Link>
 
-      {/* Karta szczegółów */}
+    <CreateApplicationModal
+      isOpen={isApplyOpen}
+      onClose={() => setIsApplyOpen(false)}
+      offerId={offer.id}
+      offerTitle={offer.title}
+    />
+
       <article className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-        {/* Nagłówek oferty */}
         <div className="p-6 md:p-8 border-b border-gray-100 bg-gray-50/50">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
@@ -93,7 +100,6 @@ export default function SingleOfferPage({ params }: SingleOfferPageProps) {
             )}
           </div>
 
-          {/* Stos technologiczny */}
           {offer.stack && offer.stack.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-6">
               {offer.stack.map((tech, idx) => (
@@ -108,9 +114,7 @@ export default function SingleOfferPage({ params }: SingleOfferPageProps) {
           )}
         </div>
 
-        {/* Treść ogłoszenia */}
         <div className="p-6 md:p-8 space-y-8">
-          {/* Opis stanowiska */}
           {offer.description && (
             <section>
               <h2 className="text-lg font-semibold text-gray-900 mb-3">Opis stanowiska</h2>
@@ -118,7 +122,6 @@ export default function SingleOfferPage({ params }: SingleOfferPageProps) {
             </section>
           )}
 
-          {/* Wymagania (Requirements) */}
           {offer.requirements && offer.requirements.length > 0 && (
             <section>
               <h2 className="text-lg font-semibold text-gray-900 mb-3">Wymagania</h2>
@@ -140,9 +143,8 @@ export default function SingleOfferPage({ params }: SingleOfferPageProps) {
             </section>
           )}
 
-          {/* Przycisk Aplikuj */}
           <div className="pt-6 border-t border-gray-100 flex justify-end">
-            <button className="bg-lime-700 hover:bg-lime-800 text-white font-medium px-6 py-2.5 rounded-lg shadow transition-all hover:shadow-md active:scale-95">
+            <button onClick={() => setIsApplyOpen(true)} className="bg-lime-700 hover:bg-lime-800 text-white font-medium px-6 py-2.5 rounded-lg shadow transition-all hover:shadow-md active:scale-95">
               Aplikuj teraz
             </button>
           </div>

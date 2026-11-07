@@ -52,6 +52,11 @@ export default function Header() {
               Kontakt
             </Link>
           </li>
+           {isAuthenticated &&
+            <Link href="/profile/applications" className="hover:underline transition-all">
+              Aplikacje
+            </Link>
+            }
         </ul>
 
         <div className="flex items-center space-x-3 border-l border-lime-600/60 px-4 h-full text-sm">

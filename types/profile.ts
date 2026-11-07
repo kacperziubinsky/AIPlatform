@@ -8,6 +8,15 @@ export interface UserProfile {
     experience: number;
 }
 
+interface UpdateUserProfileRequest {
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
+  city?: string;
+  stack?: string[];
+  experience?: number;
+}
+
 export function parseUserProfile(data: Record<string, unknown>): UserProfile {
   return {
     id: String(data.id ?? ""),

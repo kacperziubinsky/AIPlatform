@@ -9,6 +9,7 @@ import UploadBox from "@/components/ui/upload-box";
 import UserCvList from "@/components/ui/user-cv-list";
 import { fetchUserCV } from "@/services/cv-service";
 import { UserCV } from "@/types/cv";
+import EditProfileModal from "@/components/modals/EditProfileModal";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -16,6 +17,8 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [cvList, setCvList] = useState<UserCV[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
 
     const loadCvList = async () => {
       try {
@@ -67,12 +70,21 @@ export default function ProfilePage() {
 
   return (
     <div className="container mx-auto py-10 px-4 max-w-3xl">
+           <EditProfileModal
+              isOpen={isModalOpen}
+              onClose={() => setIsModalOpen(false)}
+              profile={profile}
+              onProfileUpdated={(updatedProfile) => setProfile(updatedProfile)}
+            />
+            
       <Link
         href="/offers"
         className="inline-flex items-center text-sm font-medium text-lime-700 hover:text-lime-800 mb-6 transition-colors"
       >
         ← Powrót do ofert pracy
       </Link>
+
+      
 
       <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-100 pb-6 mb-6 gap-4">
@@ -91,7 +103,7 @@ export default function ProfilePage() {
           </div>
 
           <button
-            onClick={() => alert("Edycja profilu w przygotowaniu")}
+            onClick={() => setIsModalOpen(true)}
             className="px-4 py-2 text-sm font-medium text-lime-700 border border-lime-700/30 rounded-lg hover:bg-lime-50 transition-colors"
           >
             Edytuj profil
@@ -136,15 +148,14 @@ export default function ProfilePage() {
                 console.log("CV wgrane pomyślnie:", uploadedCv);
               }}
             />
-            
 
             <UserCvList
               cvList={cvList}
               onDelete={async (id) => {
                 setCvList((prev) => prev.filter((cv) => cv.id !== id));
               }}
-            />      
-    </div>
+            />
+          </div>
         </div>
       </div>
     </div>
