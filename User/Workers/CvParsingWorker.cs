@@ -5,9 +5,7 @@ using User.Services;
 
 namespace User.Workers;
 
-/// <summary>
-/// Sends uploaded CVs to the AI service one at a time and stores the structured result.
-/// </summary>
+
 public class CvParsingWorker(IServiceScopeFactory scopeFactory, ILogger<CvParsingWorker> logger) : BackgroundService
 {
     private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(10);
@@ -33,7 +31,6 @@ public class CvParsingWorker(IServiceScopeFactory scopeFactory, ILogger<CvParsin
         }
     }
 
-    // CVs left in Processing were interrupted by a shutdown. Assumes a single User service instance.
     private async Task RequeueInterruptedAsync(CancellationToken ct)
     {
         try

@@ -3,13 +3,8 @@ using Recruitment.Models.Enums;
 
 namespace Recruitment.Services;
 
-/// <summary>
-/// Turns the AI's per-requirement match levels into a 0-100 score. The AI never produces the number itself,
-/// so the score is deterministic for a given breakdown and the weights stay under the recruiter's control.
-/// </summary>
 public static class ScoreCalculator
 {
-    // Each must-have requirement with no evidence at all halves the score.
     public const double MissingRequiredPenalty = 0.5;
 
     public static int Calculate(IReadOnlyCollection<RequirementAssessment> assessments)

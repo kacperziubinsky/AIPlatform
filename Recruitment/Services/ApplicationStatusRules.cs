@@ -2,10 +2,6 @@ using Recruitment.Models.Enums;
 
 namespace Recruitment.Services;
 
-/// <summary>
-/// Recruiter pipeline: Submitted → InReview → Interview → Offered → Hired. Steps may be skipped forward,
-/// any open application may be Rejected, and Hired/Rejected/Withdrawn are final.
-/// </summary>
 public static class ApplicationStatusRules
 {
     private static readonly ApplicationStatus[] Pipeline =
@@ -31,7 +27,6 @@ public static class ApplicationStatusRules
         var fromIndex = Array.IndexOf(Pipeline, from);
         var toIndex = Array.IndexOf(Pipeline, to);
 
-        // Withdrawn isn't in the pipeline, so only the applicant can set it.
         return toIndex > fromIndex;
     }
 }
