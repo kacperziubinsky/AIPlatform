@@ -1,6 +1,6 @@
 import { parseUserCV, UserCV } from "@/types/cv";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 export async function uploadUserCV(file: File): Promise<UserCV | null> {
   const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
@@ -77,4 +77,33 @@ export async function fetchUserCV(): Promise<UserCV[]> {
 
   const data = JSON.parse(text);
   return data.map(parseUserCV);
+}
+
+export async function deleteUserCV(id: string): Promise<void> {
+  const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+
+  if (!token) {
+    throw new Error("Brak tokena uwierzytelniającego");
+  }
+
+  const response = await fetch(`${API_URL}/user/api/users/me/cvs/${id}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (response.status === 401) {
+    localStorage.removeItem("accessToken");
+    window.location.href = "/login";
+    throw new Error("Sesja wygasła. Zaloguj się ponownie.");
+  }
+
+  if (response.status === 404) {
+    throw new Error("CV nie zostało znalezione.");
+  }
+
+  if (!response.ok) {
+    throw new Error("Nie udało się usunąć CV.");
+  }
 }

@@ -73,7 +73,7 @@ export default function UploadBox({ onSuccess }: UploadBoxProps) {
       >
         <input
           type="file"
-          accept=".pdf,.doc,.docx"
+          accept=".pdf,.docx"
           onChange={handleFileChange}
           disabled={isUploading}
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"

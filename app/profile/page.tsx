@@ -7,9 +7,10 @@ import { fetchUserProfile } from "@/services/profile-service";
 import { UserProfile } from "@/types/profile";
 import UploadBox from "@/components/ui/upload-box";
 import UserCvList from "@/components/ui/user-cv-list";
-import { fetchUserCV } from "@/services/cv-service";
+import { deleteUserCV, fetchUserCV } from "@/services/cv-service";
 import { UserCV } from "@/types/cv";
 import EditProfileModal from "@/components/modals/EditProfileModal";
+import { dictionaryLabel, EXPERIENCE_OPTIONS } from "@/types/offer";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -18,6 +19,7 @@ export default function ProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [cvList, setCvList] = useState<UserCV[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [cvError, setCvError] = useState<string | null>(null);
 
 
     const loadCvList = async () => {
@@ -116,7 +118,7 @@ export default function ProfilePage() {
               Doświadczenie zawodowe
             </h2>
             <p className="text-lg font-bold text-gray-800">
-              {profile.experience} {profile.experience === 1 ? "rok" : profile.experience < 5 ? "lata" : "lat"}
+              {dictionaryLabel(EXPERIENCE_OPTIONS, profile.experience)}
             </p>
           </div>
 
@@ -143,16 +145,23 @@ export default function ProfilePage() {
           <div className="max-w-2xl mx-auto p-6 bg-white rounded-2xl border border-gray-200 shadow-sm mt-8">
             <h2 className="text-lg font-bold text-gray-900 mb-4">Dodaj lub zaktualizuj swoje CV</h2>
             
-            <UploadBox
-              onSuccess={(uploadedCv) => {
-                console.log("CV wgrane pomyślnie:", uploadedCv);
-              }}
-            />
+            <UploadBox onSuccess={() => loadCvList()} />
+
+            {cvError && (
+              <p className="text-sm text-red-600 mt-3">{cvError}</p>
+            )}
 
             <UserCvList
               cvList={cvList}
               onDelete={async (id) => {
-                setCvList((prev) => prev.filter((cv) => cv.id !== id));
+                if (!confirm("Czy na pewno chcesz usunąć to CV?")) return;
+                setCvError(null);
+                try {
+                  await deleteUserCV(id);
+                  setCvList((prev) => prev.filter((cv) => cv.id !== id));
+                } catch (err) {
+                  setCvError(err instanceof Error ? err.message : "Nie udało się usunąć CV.");
+                }
               }}
             />
           </div>

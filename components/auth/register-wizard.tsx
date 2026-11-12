@@ -4,11 +4,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { RegisterUserStep2, RegisterUserStep1 } from "@/services/auth-service";
 import { LoginUser } from "@/services/auth-service";
-import { Experience } from "@/types/offer";
+import { Experience, EXPERIENCE_OPTIONS } from "@/types/offer";
+
+type Role = "Applicant" | "Recruiter";
 
 export default function RegisterWizard() {
   const router = useRouter();
   const [step, setStep] = useState<1 | 2>(1);
+  const [role, setRole] = useState<Role>("Applicant");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,6 +25,8 @@ export default function RegisterWizard() {
   const [stackInput, setStackInput] = useState("C#, .NET, PostgreSQL, Docker");
   const [experience, setExperience] = useState<Experience>(Experience.Junior);
 
+  const isRecruiter = role === "Recruiter";
+
   const handleStep1Submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -31,7 +36,7 @@ export default function RegisterWizard() {
       await RegisterUserStep1({
         email,
         password,
-        role: "Applicant",
+        role,
       });
 
       const authData = await LoginUser({ email, password });
@@ -53,14 +58,17 @@ export default function RegisterWizard() {
     const token = localStorage.getItem("accessToken");
     if (!token) {
       setError("Brak sesji. Zaloguj się ponownie.");
+      setIsLoading(false);
       router.push("/login");
       return;
     }
 
-    const stackArray = stackInput
-      .split(",")
-      .map((item) => item.trim())
-      .filter((item) => item.length > 0);
+    const stackArray = isRecruiter
+      ? []
+      : stackInput
+          .split(",")
+          .map((item) => item.trim())
+          .filter((item) => item.length > 0);
 
     try {
       await RegisterUserStep2(
@@ -70,7 +78,7 @@ export default function RegisterWizard() {
           phoneNumber: phone,
           city,
           stack: stackArray,
-          experience: Number (experience) as Experience,
+          experience: Number(experience) as Experience,
         },
         token
       );
@@ -84,6 +92,9 @@ export default function RegisterWizard() {
     }
   };
 
+  const inputClass =
+    "w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-lime-600 focus:outline-none";
+
   return (
     <div className="w-full max-w-md bg-white p-8 border border-gray-200 rounded-2xl shadow-sm">
       <div className="flex items-center justify-between mb-6">
@@ -91,7 +102,7 @@ export default function RegisterWizard() {
           1. Konto
         </div>
         <div className={`flex-1 text-center font-semibold text-xs py-1 border-b-2 ${step === 2 ? "border-lime-600 text-lime-700" : "border-gray-200 text-gray-400"}`}>
-          2. Profil Kandydata
+          {isRecruiter ? "2. Profil Rekrutera" : "2. Profil Kandydata"}
         </div>
       </div>
 
@@ -103,6 +114,27 @@ export default function RegisterWizard() {
 
       {step === 1 && (
         <form onSubmit={handleStep1Submit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-1 p-1 bg-gray-100 rounded-lg">
+            <button
+              type="button"
+              onClick={() => setRole("Applicant")}
+              className={`py-2 text-sm font-medium rounded-md transition-colors ${
+                !isRecruiter ? "bg-white text-lime-700 shadow-sm" : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              Szukam pracy
+            </button>
+            <button
+              type="button"
+              onClick={() => setRole("Recruiter")}
+              className={`py-2 text-sm font-medium rounded-md transition-colors ${
+                isRecruiter ? "bg-white text-lime-700 shadow-sm" : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              Jestem rekruterem
+            </button>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
             <input
@@ -110,8 +142,8 @@ export default function RegisterWizard() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-lime-600 focus:outline-none"
-              placeholder="kandydat@example.com"
+              className={inputClass}
+              placeholder={isRecruiter ? "rekruter@firma.com" : "kandydat@example.com"}
             />
           </div>
 
@@ -122,7 +154,7 @@ export default function RegisterWizard() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-lime-600 focus:outline-none"
+              className={inputClass}
               placeholder="••••••••"
             />
           </div>
@@ -147,7 +179,7 @@ export default function RegisterWizard() {
                 required
                 value={firstname}
                 onChange={(e) => setFirstname(e.target.value)}
-                className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-lime-600 focus:outline-none"
+                className={inputClass}
                 placeholder="Jan"
               />
             </div>
@@ -158,7 +190,7 @@ export default function RegisterWizard() {
                 required
                 value={lastname}
                 onChange={(e) => setLastname(e.target.value)}
-                className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-lime-600 focus:outline-none"
+                className={inputClass}
                 placeholder="Testowy"
               />
             </div>
@@ -172,7 +204,7 @@ export default function RegisterWizard() {
                 required
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-lime-600 focus:outline-none"
+                className={inputClass}
                 placeholder="+48123456789"
               />
             </div>
@@ -183,48 +215,57 @@ export default function RegisterWizard() {
                 required
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-lime-600 focus:outline-none"
+                className={inputClass}
                 placeholder="Warszawa"
               />
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Doświadczenie
-            </label>
-            <select
-              value={experience}
-              onChange={(e) => setExperience(Number(e.target.value) as Experience)}
-              className="w-full p-2.5 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-lime-600 focus:outline-none"
-            >
-              <option value={Experience.Trainee}>Stażysta (Trainee)</option>
-              <option value={Experience.Junior}>Junior (0-2 lata)</option>
-              <option value={Experience.Middle}>Mid (2-4 lata)</option>
-              <option value={Experience.Senior}>Senior (5+ lat)</option>
-            </select>
-          </div>
+          {!isRecruiter && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Doświadczenie
+                </label>
+                <select
+                  value={experience}
+                  onChange={(e) => setExperience(Number(e.target.value) as Experience)}
+                  className="w-full p-2.5 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-lime-600 focus:outline-none"
+                >
+                  {EXPERIENCE_OPTIONS.map((x) => (
+                    <option key={x.value} value={x.value}>
+                      {x.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Stos technologiczny (rozdziel po przecinku)
-            </label>
-            <input
-              type="text"
-              required
-              value={stackInput}
-              onChange={(e) => setStackInput(e.target.value)}
-              className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-lime-600 focus:outline-none font-mono text-xs"
-              placeholder="C#, .NET, PostgreSQL, Docker"
-            />
-          </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Stos technologiczny (rozdziel po przecinku)
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={stackInput}
+                  onChange={(e) => setStackInput(e.target.value)}
+                  className="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-lime-600 focus:outline-none font-mono text-xs"
+                  placeholder="C#, .NET, PostgreSQL, Docker"
+                />
+              </div>
+            </>
+          )}
 
           <button
             type="submit"
             disabled={isLoading}
             className="w-full bg-lime-700 hover:bg-lime-800 text-white font-medium py-2.5 rounded-lg transition-colors disabled:opacity-50 mt-2"
           >
-            {isLoading ? "Zapisywanie..." : "Zakończ i przejdź do ofert"}
+            {isLoading
+              ? "Zapisywanie..."
+              : isRecruiter
+              ? "Zakończ i przejdź do panelu"
+              : "Zakończ i przejdź do ofert"}
           </button>
         </form>
       )}

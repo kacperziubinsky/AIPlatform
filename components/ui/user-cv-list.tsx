@@ -2,6 +2,13 @@
 
 import { UserCV } from "@/types/cv";
 
+const PARSE_STATUS: Record<string, { label: string; className: string }> = {
+  Pending: { label: "Oczekuje na analizę", className: "bg-gray-100 text-gray-600" },
+  Processing: { label: "Analizowanie", className: "bg-amber-100 text-amber-800" },
+  Completed: { label: "Przeanalizowane", className: "bg-lime-100 text-lime-800" },
+  Failed: { label: "Błąd analizy", className: "bg-red-100 text-red-700" },
+};
+
 interface UserCvListProps {
   cvList: UserCV[];
   onDelete?: (id: string) => void;
@@ -38,6 +45,11 @@ export default function UserCvList({ cvList, onDelete }: UserCvListProps) {
             </div>
 
             <div className="flex items-center space-x-2">
+              {PARSE_STATUS[cv.parseStatus] && (
+                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${PARSE_STATUS[cv.parseStatus].className}`}>
+                  {PARSE_STATUS[cv.parseStatus].label}
+                </span>
+              )}
 
               {onDelete && (
                 <button

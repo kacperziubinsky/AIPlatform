@@ -4,6 +4,7 @@ import { useState } from "react";
 import { updateUserProfile } from "@/services/profile-service";
 import { UserProfile } from "@/types/profile";
 import Modal from "@/components/ui/modal";
+import { EXPERIENCE_OPTIONS } from "@/types/offer";
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -124,16 +125,19 @@ export default function EditProfileModal({
 
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1">
-              Doświadczenie (lata)
+              Doświadczenie
             </label>
-            <input
-              type="number"
-              min="0"
-              max="50"
+            <select
               value={experience}
               onChange={(e) => setExperience(Number(e.target.value))}
-              className="w-full px-3 py-2 border rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-lime-600 border-gray-300"
-            />
+              className="w-full px-3 py-2 border rounded-lg text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-lime-600 border-gray-300"
+            >
+              {EXPERIENCE_OPTIONS.map((x) => (
+                <option key={x.value} value={x.value}>
+                  {x.label}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>
