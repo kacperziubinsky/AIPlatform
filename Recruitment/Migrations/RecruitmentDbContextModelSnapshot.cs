@@ -93,6 +93,10 @@ namespace Recruitment.Migrations
                     b.Property<Guid>("CvId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("OfferCompany")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
                     b.Property<Guid>("OfferId")
                         .HasColumnType("uuid");
 

@@ -9,6 +9,7 @@ public record OfferDto
     public Guid AuthorId { get; init; }
     public string Title { get; init; } = "";
     public string Description { get; init; } = "";
+    public string? Company { get; init; }
     public OfferExperience Experience { get; init; }
     public List<string> Stack { get; init; } = new();
     public List<OfferRequirementDto> Requirements { get; init; } = new();

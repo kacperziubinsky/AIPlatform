@@ -12,6 +12,7 @@ public class JobApplication
 
     public Guid? RecruiterId { get; set; }
     public string? OfferTitle { get; set; }
+    public string? OfferCompany { get; set; }
 
     public string? CoverLetter { get; set; }
     public string? RecruiterNote { get; set; }

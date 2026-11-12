@@ -45,6 +45,7 @@ public class ApplicationService : IApplicationService
             CvId = request.CvId,
             RecruiterId = offer.AuthorId,
             OfferTitle = offer.Title,
+            OfferCompany = offer.Company,
             CoverLetter = request.CoverLetter,
             Status = ApplicationStatus.Submitted,
             CreatedAt = DateTime.UtcNow,
@@ -57,13 +58,14 @@ public class ApplicationService : IApplicationService
         return new ApplicationResponse(application.Id, application.OfferId, application.Status, application.CreatedAt);
     }
 
-    public async Task<List<ApplicationResponse>> GetMyApplicationsAsync(Guid applicantId)
+    public async Task<List<MyApplicationResponse>> GetMyApplicationsAsync(Guid applicantId)
     {
         return await _context.Applications
             .AsNoTracking()
             .Where(a => a.ApplicantId == applicantId)
             .OrderByDescending(a => a.CreatedAt)
-            .Select(a => new ApplicationResponse(a.Id, a.OfferId, a.Status, a.CreatedAt))
+            .Select(a => new MyApplicationResponse(
+                a.Id, a.OfferId, a.OfferTitle, a.OfferCompany, a.Status, a.CreatedAt, a.UpdatedAt))
             .ToListAsync();
     }
 

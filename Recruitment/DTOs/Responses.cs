@@ -8,6 +8,15 @@ public record ApplicationResponse(
     ApplicationStatus Status,
     DateTime CreatedAt);
 
+public record MyApplicationResponse(
+    Guid Id,
+    Guid OfferId,
+    string? OfferTitle,
+    string? Company,
+    ApplicationStatus Status,
+    DateTime AppliedAt,
+    DateTime UpdatedAt);
+
 public record RecruiterApplicationResponse(
     Guid Id,
     Guid OfferId,

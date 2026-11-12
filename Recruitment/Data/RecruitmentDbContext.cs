@@ -21,6 +21,7 @@ public class RecruitmentDbContext : DbContext
             e.HasIndex(a => new { a.OfferId, a.ApplicantId }).IsUnique();
 
             e.Property(a => a.OfferTitle).HasMaxLength(200);
+            e.Property(a => a.OfferCompany).HasMaxLength(200);
             e.Property(a => a.CoverLetter).HasMaxLength(3000);
             e.Property(a => a.RecruiterNote).HasMaxLength(1000);
 
