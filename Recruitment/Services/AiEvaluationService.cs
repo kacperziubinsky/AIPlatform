@@ -66,8 +66,9 @@ public class AiEvaluationService : IAiEvaluationService
         }
 
         application.OfferTitle = offer.Title;
+        application.OfferCompany = offer.Company;
 
-        var cv = await _users.GetCvAsync(application.ApplicantId, application.CvId, ct);
+        var cv = await _users.GetCvAsync(application.ApplicantId, application.CvId, includeDeleted: true, ct);
         if (cv is null)
         {
             Fail(application, "CV not found.");

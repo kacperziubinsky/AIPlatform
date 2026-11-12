@@ -4,5 +4,5 @@ namespace Recruitment.Services;
 
 public interface IUserServiceClient
 {
-    Task<CvDto?> GetCvAsync(Guid userId, Guid cvId, CancellationToken ct = default);
+    Task<CvDto?> GetCvAsync(Guid userId, Guid cvId, bool includeDeleted = false, CancellationToken ct = default);
 }

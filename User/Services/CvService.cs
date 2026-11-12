@@ -63,7 +63,7 @@ public class CvService : ICvService
 
         var cvs = await _context.CVs
             .AsNoTracking()
-            .Where(c => c.UserId == userId)
+            .Where(c => c.UserId == userId && c.DeletedAt == null)
             .OrderByDescending(c => c.UploadedAt)
             .Select(c => new CvItemResponse
             {
@@ -77,14 +77,15 @@ public class CvService : ICvService
         return cvs;
     }
 
-    public async Task<CvDetailsResponse?> GetCvAsync(Guid userId, Guid cvId)
+    public async Task<CvDetailsResponse?> GetCvAsync(Guid userId, Guid cvId, bool includeDeleted = false)
     {
         if (userId == Guid.Empty)
         {
             throw new ArgumentException("User id is invalid", nameof(userId));
         }
-        
-        var cv = await _context.CVs.AsNoTracking().FirstOrDefaultAsync(c => c.UserId == userId && c.Id == cvId);
+
+        var cv = await _context.CVs.AsNoTracking().FirstOrDefaultAsync(c =>
+            c.UserId == userId && c.Id == cvId && (includeDeleted || c.DeletedAt == null));
 
         if (cv is null)
         {
@@ -125,21 +126,28 @@ public class CvService : ICvService
 
         if (cvId == Guid.Empty)
         {
-            throw new ArgumentException("Cv id is invalid", nameof(userId));
+            throw new ArgumentException("Cv id is invalid", nameof(cvId));
         }
         
-        var cv = await _context.CVs.FirstOrDefaultAsync(c => c.Id == cvId && c.UserId == userId);
+        var cv = await _context.CVs.FirstOrDefaultAsync(c => c.Id == cvId && c.UserId == userId && c.DeletedAt == null);
 
         if (cv is null)
         {
             return false;
         }
 
-        _context.CVs.Remove(cv);
+        cv.DeletedAt = DateTime.UtcNow;
+
+        if (cv.ParseStatus == CvParseStatus.Pending)
+        {
+            cv.ParseStatus = CvParseStatus.Failed;
+            cv.ParseError = "CV was deleted before it could be parsed.";
+        }
+
         await _context.SaveChangesAsync();
 
         await _storage.DeleteAsync(cv.StorageKey);
-        
+
         return true;
     }
 }

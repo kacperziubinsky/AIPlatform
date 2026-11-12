@@ -35,12 +35,12 @@ public class InternalUserController : ControllerBase
     }
 
     [HttpGet("{userId:guid}/cvs/{cvId:guid}")]
-    public async Task<ActionResult<CvDetailsResponse>> GetCvAsync(Guid userId, Guid cvId)
+    public async Task<ActionResult<CvDetailsResponse>> GetCvAsync(Guid userId, Guid cvId, [FromQuery] bool includeDeleted = false)
     {
         if (!IsValidApiKey())
             return Unauthorized();
 
-        var cv = await _cvService.GetCvAsync(userId, cvId);
+        var cv = await _cvService.GetCvAsync(userId, cvId, includeDeleted);
         return cv is null ? NotFound() : Ok(cv);
     }
 

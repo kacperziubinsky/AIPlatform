@@ -56,7 +56,7 @@ public class CvParsingWorker(IServiceScopeFactory scopeFactory, ILogger<CvParsin
         var parser = scope.ServiceProvider.GetRequiredService<ICvParserClient>();
 
         var cvId = await db.CVs
-            .Where(c => c.ParseStatus == CvParseStatus.Pending)
+            .Where(c => c.ParseStatus == CvParseStatus.Pending && c.DeletedAt == null)
             .OrderBy(c => c.UploadedAt)
             .Select(c => c.Id)
             .FirstOrDefaultAsync(ct);

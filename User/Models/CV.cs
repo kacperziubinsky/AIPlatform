@@ -11,6 +11,7 @@ public class CV
     public string StorageKey { get; set; } = "";
     public string ContentType { get; set; } = "";
     public DateTime UploadedAt { get; set; }
+    public DateTime? DeletedAt { get; set; }
 
     public CvParseStatus ParseStatus { get; set; } = CvParseStatus.Pending;
     public DateTime? ParsedAt { get; set; }

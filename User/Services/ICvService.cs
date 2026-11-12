@@ -7,6 +7,6 @@ public interface ICvService
 {
     Task<bool> UploadCvAsync(IFormFile? file, Guid userId);
     Task<IReadOnlyList<CvItemResponse>> GetCvsAsync(Guid userId);
-    Task<CvDetailsResponse?> GetCvAsync(Guid userId, Guid cvId);
+    Task<CvDetailsResponse?> GetCvAsync(Guid userId, Guid cvId, bool includeDeleted = false);
     Task<bool> DeleteCvAsync(Guid userId, Guid cvId);
 }
