@@ -3,15 +3,18 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { getTokenInfo } from "@/lib/auth-token";
 
 export default function Header() {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isRecruiter, setIsRecruiter] = useState<boolean>(false);
 
   useEffect(() => {
     const checkAuth = () => {
       const token = localStorage.getItem("accessToken");
       setIsAuthenticated(!!token);
+      setIsRecruiter(getTokenInfo().role?.toLowerCase() === "recruiter");
     };
 
     checkAuth();
@@ -23,6 +26,7 @@ export default function Header() {
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
     setIsAuthenticated(false);
+    setIsRecruiter(false);
     router.push("/login");
     router.refresh();
   };
@@ -52,11 +56,20 @@ export default function Header() {
               Kontakt
             </Link>
           </li>
-           {isAuthenticated &&
-            <Link href="/profile/applications" className="hover:underline transition-all">
-              Aplikacje
-            </Link>
-            }
+          {isAuthenticated && !isRecruiter && (
+            <li>
+              <Link href="/profile/applications" className="hover:underline transition-all">
+                Aplikacje
+              </Link>
+            </li>
+          )}
+          {isAuthenticated && isRecruiter && (
+            <li>
+              <Link href="/recruitment" className="hover:underline transition-all">
+                Rekrutacja
+              </Link>
+            </li>
+          )}
         </ul>
 
         <div className="flex items-center space-x-3 border-l border-lime-600/60 px-4 h-full text-sm">

@@ -47,3 +47,68 @@ export enum Experience {
   Middle = 2,
   Senior = 3,
 }
+
+
+export interface DictionaryItem {
+  value: number;
+  name: string;
+  label: string;
+}
+
+export interface OfferDictionaries {
+  categories: DictionaryItem[];
+  experiences: DictionaryItem[];
+}
+
+export const CATEGORY_OPTIONS: DictionaryItem[] = [
+  { value: Category.Ai, name: "Ai", label: "AI" },
+  { value: Category.Backend, name: "Backend", label: "Backend" },
+  { value: Category.Pm, name: "Pm", label: "Project Management" },
+  { value: Category.FullStack, name: "FullStack", label: "Full Stack" },
+  { value: Category.Software, name: "Software", label: "Software" },
+  { value: Category.Frontend, name: "Frontend", label: "Frontend" },
+];
+
+export const EXPERIENCE_OPTIONS: DictionaryItem[] = [
+  { value: Experience.Trainee, name: "Trainee", label: "Trainee" },
+  { value: Experience.Junior, name: "Junior", label: "Junior" },
+  { value: Experience.Middle, name: "Middle", label: "Mid" },
+  { value: Experience.Senior, name: "Senior", label: "Senior" },
+];
+
+export const DEFAULT_OFFER_DICTIONARIES: OfferDictionaries = {
+  categories: CATEGORY_OPTIONS,
+  experiences: EXPERIENCE_OPTIONS,
+};
+
+export function dictionaryLabel(items: DictionaryItem[], value: number | null | undefined): string {
+  return items.find((item) => item.value === value)?.label ?? "—";
+}
+
+export const OFFER_LIMITS = {
+  title: 200,
+  description: 5000,
+  company: 200,
+} as const;
+
+export interface OfferRequirementRequest {
+  name: string;
+  description: string;
+  weight: number;
+  isRequired: boolean;
+}
+ 
+export interface CreateOfferRequest {
+  title: string;
+  description: string;
+  salary: number;
+  category: Category;
+  experience: Experience;
+  stack: string[];
+  requirements: OfferRequirementRequest[];
+  startDate: string;
+  endDate: string;
+  company: string;
+}
+
+export type UpdateOfferRequest = CreateOfferRequest;

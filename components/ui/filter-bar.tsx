@@ -2,11 +2,12 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
-import { Category, Experience } from "@/types/offer";
+import { useOfferDictionaries } from "@/lib/use-offer-dictionaries";
 
 export default function FilterBar() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { categories, experiences } = useOfferDictionaries();
 
   const [category, setCategory] = useState<string>(searchParams.get("category") || "");
   const [experience, setExperience] = useState<string>(searchParams.get("experience") || "");
@@ -56,12 +57,11 @@ export default function FilterBar() {
           className="w-full border border-gray-300 rounded-md p-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-lime-600"
         >
           <option value="">Wszystkie kategorie</option>
-          <option value={Category.Frontend}>Frontend</option>
-          <option value={Category.Backend}>Backend</option>
-          <option value={Category.FullStack}>FullStack</option>
-          <option value={Category.Ai}>AI</option>
-          <option value={Category.Software}>Software</option>
-          <option value={Category.Pm}>PM (Project Manager)</option>
+          {categories.map((c) => (
+            <option key={c.value} value={c.value}>
+              {c.label}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -75,10 +75,11 @@ export default function FilterBar() {
           className="w-full border border-gray-300 rounded-md p-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-lime-600"
         >
           <option value="">Wszystkie poziomy</option>
-          <option value={Experience.Trainee}>Stażysta / Trainee</option>
-          <option value={Experience.Junior}>Junior</option>
-          <option value={Experience.Middle}>Mid / Middle</option>
-          <option value={Experience.Senior}>Senior</option>
+          {experiences.map((x) => (
+            <option key={x.value} value={x.value}>
+              {x.label}
+            </option>
+          ))}
         </select>
       </div>
 
