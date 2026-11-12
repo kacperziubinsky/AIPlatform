@@ -14,36 +14,48 @@ Platforma rekrutacyjna zbudowana w architekturze mikroserwisów (.NET 10, Postgr
 
 ## Wymagania
 
-- Docker Desktop,
+- system Windows 10 lub 11 z zainstalowanym i uruchomionym programem Docker Desktop,
+- Windows PowerShell (wbudowany w system); wszystkie polecenia w niniejszym dokumencie zostały przygotowane dla tej powłoki,
 - opcjonalnie: [LM Studio](https://lmstudio.ai/) z modelem `qwen2.5-7b-instruct` udostępnionym na porcie `1234`. Jest ono wymagane wyłącznie do analizy CV i oceny AI. W przypadku jego braku pozostałe funkcje platformy działają poprawnie, natomiast CV otrzymuje status `Failed`,
+- opcjonalnie: .NET SDK 10, w przypadku budowania projektu bez użycia Dockera.
 
 ## Uruchomienie
 
-Należy otworzyć PowerShell w katalogu repozytorium, a następnie wykonać polecenie:
+Należy otworzyć PowerShell w katalogu repozytorium. Z poziomu klawiatury można to zrobić na dwa sposoby:
+
+- w Eksploratorze plików przejść do katalogu repozytorium, nacisnąć Alt+D (przejście do paska adresu), wpisać `powershell` i nacisnąć Enter,
+- albo nacisnąć Win+R, wpisać `powershell`, nacisnąć Enter, a następnie przejść do katalogu repozytorium poleceniem `cd`, np. `cd "C:\Users\Nazwa\RiderProjects\AI platform"`.
+
+Przed uruchomieniem platformy należy upewnić się, że Docker Desktop działa. Polecenie `docker info` wypisuje informacje o silniku Dockera; jeżeli zamiast nich pojawia się komunikat o błędzie połączenia, Docker Desktop nie jest uruchomiony.
 
 ```powershell
+docker info
 docker compose up -d --build
 ```
 
-Pierwsze budowanie obrazów trwa kilka minut. Migracje baz danych są wykonywane automatycznie podczas uruchamiania serwisów. Stan kontenerów oraz ich logi można sprawdzić poleceniami:
+Pierwsze budowanie obrazów trwa kilka minut. Polecenie kończy się wypisaniem nazw kontenerów ze statusem `Started`. Migracje baz danych są wykonywane automatycznie podczas uruchamiania serwisów. Stan kontenerów oraz ich logi można sprawdzić poleceniami poniżej. Każdy z siedmiu kontenerów powinien mieć w kolumnie STATUS wartość zaczynającą się od `Up`.
 
 ```powershell
 docker compose ps
-docker compose logs -f gateway auth
+docker compose logs -f gateway auth      # logi wybranych serwisów (zakończenie: Ctrl+C)
 ```
 
 Zatrzymanie platformy (parametr `-v` powoduje dodatkowo usunięcie bazy danych):
 
 ```powershell
-docker compose down
+docker compose down        # lub: docker compose down -v
 ```
 
+Projekt można również zbudować bez użycia Dockera poleceniem `dotnet build "AI platform.sln"`.
 
 ## Testowanie z poziomu konsoli (PowerShell)
 
-Poniższe bloki poleceń należy wykonywać kolejno, w **tym samym oknie** PowerShella, uruchomionym w katalogu repozytorium. Kolejne kroki korzystają ze zmiennych utworzonych w krokach poprzednich (`$rec`, `$offer`, `$cv` itd.). Polecenie `Invoke-RestMethod` automatycznie przekształca odpowiedź JSON w obiekt, dzięki czemu tokeny i identyfikatory nie wymagają ręcznego kopiowania.
+Poniższe bloki poleceń należy wykonywać kolejno, w **tym samym oknie** PowerShella, uruchomionym w katalogu repozytorium. Kolejne kroki korzystają ze zmiennych utworzonych w krokach poprzednich (`$rec`, `$offer`, `$cv` itd.). Polecenie `Invoke-RestMethod` automatycznie przekształca odpowiedź JSON w obiekt, dzięki czemu tokeny i identyfikatory nie wymagają ręcznego kopiowania. Odpowiedzi są wypisywane w konsoli jako zwykły tekst w formacie „nazwa pola : wartość”. Wieloliniowe bloki można wkleić do okna PowerShella skrótem Ctrl+V i zatwierdzić klawiszem Enter.
 
-**Krok 0. Konfiguracja**
+Każdy krok jest osobnym nagłówkiem trzeciego poziomu, co ułatwia nawigację czytnikiem ekranu.
+
+### Krok 0. Konfiguracja
+
 
 ```powershell
 $api  = "http://localhost:8080"
@@ -51,7 +63,8 @@ $json = "application/json; charset=utf-8"
 $id   = Get-Date -Format "HHmmss"     # unikalny sufiks adresów e-mail, umożliwiający wielokrotne uruchamianie testów
 ```
 
-**Krok 1. Rejestracja rekrutera i kandydata.** Odpowiedź zawiera pole `token` (token JWT ważny przez 60 minut).
+### Krok 1. Rejestracja rekrutera i kandydata.
+ Odpowiedź zawiera pole `token` (token JWT ważny przez 60 minut).
 
 ```powershell
 $body = @{ email = "rekruter$id@example.com"; password = "Password123!"; role = "Recruiter" } | ConvertTo-Json
@@ -72,13 +85,15 @@ $app  = (Invoke-RestMethod "$api/auth/auth/login" -Method Post -ContentType $jso
 $appH = @{ Authorization = "Bearer $app" }
 ```
 
-**Krok 2. Pobranie profilu zalogowanego użytkownika**
+### Krok 2. Pobranie profilu zalogowanego użytkownika
+
 
 ```powershell
 Invoke-RestMethod "$api/user/api/users/me" -Headers $appH
 ```
 
-**Krok 3. Utworzenie oferty przez rekrutera.** Wartości pola `category`: 0 – Ai, 1 – Backend, 2 – Pm, 3 – FullStack, 4 – Software, 5 – Frontend. Wartości pola `experience`: 0 – Trainee, 1 – Junior, 2 – Middle, 3 – Senior. Data `endDate` musi przypadać w przyszłości, w przeciwnym razie aplikowanie na ofertę nie jest możliwe.
+### Krok 3. Utworzenie oferty przez rekrutera.
+ Wartości pola `category`: 0 – Ai, 1 – Backend, 2 – Pm, 3 – FullStack, 4 – Software, 5 – Frontend. Wartości pola `experience`: 0 – Trainee, 1 – Junior, 2 – Middle, 3 – Senior. Data `endDate` musi przypadać w przyszłości, w przeciwnym razie aplikowanie na ofertę nie jest możliwe.
 
 ```powershell
 $body = @{
@@ -103,7 +118,8 @@ Invoke-RestMethod "$api/offer/offers"            # lista ofert (bez uwierzytelni
 Invoke-RestMethod "$api/offer/offers/$offer"     # szczegóły oferty
 ```
 
-**Krok 4. Przesłanie CV przez kandydata** (format PDF lub DOCX, maksymalnie 5 MB). Do przesłania pliku wykorzystywany jest program `curl.exe`, wbudowany w systemy Windows 10 i 11. Należy użyć pełnej nazwy `curl.exe`, ponieważ w PowerShellu `curl` jest aliasem innego polecenia. Odpowiedź na przesłanie pliku zawiera wyłącznie kod `201`, dlatego identyfikator CV jest pobierany z listy CV użytkownika.
+### Krok 4. Przesłanie CV przez kandydata
+ (format PDF lub DOCX, maksymalnie 5 MB). Do przesłania pliku wykorzystywany jest program `curl.exe`, wbudowany w systemy Windows 10 i 11. Należy użyć pełnej nazwy `curl.exe`, ponieważ w PowerShellu `curl` jest aliasem innego polecenia. Odpowiedź na przesłanie pliku zawiera wyłącznie kod `201`, dlatego identyfikator CV jest pobierany z listy CV użytkownika.
 
 ```powershell
 curl.exe -i -X POST "$api/user/api/users/me/cvs" -H "Authorization: Bearer $app" -F "file=@postman/fixtures/cv.pdf"
@@ -114,7 +130,8 @@ $cv = (Invoke-RestMethod "$api/user/api/users/me/cvs" -Headers $appH)[0].id
 Invoke-RestMethod "$api/user/api/users/me/cvs/$cv" -Headers $appH
 ```
 
-**Krok 5. Złożenie aplikacji na ofertę przez kandydata**
+### Krok 5. Złożenie aplikacji na ofertę przez kandydata
+
 
 ```powershell
 $body = @{ offerId = $offer; cvId = $cv; coverLetter = "Dzien dobry!" } | ConvertTo-Json
@@ -123,7 +140,8 @@ $appl = (Invoke-RestMethod "$api/recruitment/api/applications" -Method Post -Hea
 Invoke-RestMethod "$api/recruitment/api/applications/me" -Headers $appH
 ```
 
-**Krok 6. Przegląd aplikacji przez rekrutera.** Pola `aiStatus` i `aiScore` zawierają status oraz wynik oceny AI.
+### Krok 6. Przegląd aplikacji przez rekrutera.
+ Pola `aiStatus` i `aiScore` zawierają status oraz wynik oceny AI.
 
 ```powershell
 Invoke-RestMethod "$api/recruitment/api/offers/$offer/applications" -Headers $recH
@@ -140,7 +158,8 @@ do {
 } while ($a.aiStatus -in "Pending", "Processing")
 ```
 
-**Krok 7. Zmiana statusu, dodanie oceny oraz ponowne zlecenie oceny AI przez rekrutera.** Dostępne statusy: `Submitted`, `InReview`, `Interview`, `Offered`, `Hired`, `Rejected`.
+### Krok 7. Zmiana statusu, dodanie oceny oraz ponowne zlecenie oceny AI przez rekrutera.
+ Dostępne statusy: `Submitted`, `InReview`, `Interview`, `Offered`, `Hired`, `Rejected`.
 
 ```powershell
 $body = @{ status = "InReview"; note = "Ciekawy kandydat" } | ConvertTo-Json
@@ -152,13 +171,15 @@ Invoke-RestMethod "$api/recruitment/api/applications/$appl/evaluations" -Method 
 Invoke-RestMethod "$api/recruitment/api/applications/$appl/ai-evaluation" -Method Post -Headers $recH
 ```
 
-**Krok 8. Wycofanie aplikacji przez kandydata**
+### Krok 8. Wycofanie aplikacji przez kandydata
+
 
 ```powershell
 Invoke-RestMethod "$api/recruitment/api/applications/$appl" -Method Delete -Headers $appH
 ```
 
-**Obsługa błędów (401, 403, 404, 409).** W przypadku odpowiedzi z kodem błędu polecenie `Invoke-RestMethod` wyświetla komunikat o błędzie zamiast treści odpowiedzi. Jest to zachowanie oczekiwane, np. przy zapytaniu bez tokena. Sam kod odpowiedzi można odczytać w następujący sposób:
+### Obsługa błędów (401, 403, 404, 409).
+ W przypadku odpowiedzi z kodem błędu polecenie `Invoke-RestMethod` wyświetla komunikat o błędzie zamiast treści odpowiedzi. Jest to zachowanie oczekiwane, np. przy zapytaniu bez tokena. Sam kod odpowiedzi można odczytać w następujący sposób:
 
 ```powershell
 try { Invoke-RestMethod "$api/user/api/users/me" } catch { $_.Exception.Response.StatusCode.value__ }   # 401
@@ -185,6 +206,7 @@ Projekt nie posiada interfejsu graficznego, a Swagger jest dostępny wyłącznie
 - http://localhost:8080/offer/offers – lista ofert,
 - http://localhost:8080/offer/offers/{id} – szczegóły oferty.
 
+Pozostałe endpointy można testować za pomocą PowerShella, Postmana lub plików `*.http` znajdujących się w katalogach poszczególnych serwisów (Rider lub VS Code z rozszerzeniem REST Client).
 
 ## Główne endpointy (przez gateway)
 
