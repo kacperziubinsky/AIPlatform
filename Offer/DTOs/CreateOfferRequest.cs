@@ -6,10 +6,10 @@ namespace Offer.DTOs;
 public record CreateOfferRequest
 {
     [Required]
-    [StringLength(200, MinimumLength = 3)]
+    [StringLength(OfferLimits.TitleMaxLength, MinimumLength = 3)]
     public required string Title { get; set; }
     [Required]
-    [MaxLength(5000)]
+    [MaxLength(OfferLimits.DescriptionMaxLength)]
     public required string Description { get; set; }
     public decimal Salary { get; set; }
     [Required]
@@ -20,5 +20,6 @@ public record CreateOfferRequest
     public List<Requirement> Requirements { get; set; } = new();
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
+    [MaxLength(OfferLimits.CompanyMaxLength)]
     public string? Company { get; set; }
 }

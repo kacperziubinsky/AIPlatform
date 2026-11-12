@@ -9,6 +9,8 @@ public interface IOfferService
     Task<OfferResponse?> GetOfferByIdAsync(Guid id);
 
     Task<List<OfferResponse>> GetOffersAsync(OfferFilterRequest? filter = null);
+
+    Task<List<OfferResponse>> GetOffersByAuthorAsync(Guid authorId);
     
     Task<OfferResponse?> UpdateOfferAsync(Guid id, UpdateOfferRequest request, Guid userId);
 

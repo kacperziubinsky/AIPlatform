@@ -1,11 +1,13 @@
-﻿namespace Offer.Models.Enums;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Offer.Models.Enums;
 
 public enum Category
 {
-    Ai,
-    Backend,
-    Pm,
-    FullStack,
-    Software,
-    Frontend
+    [Display(Name = "AI")] Ai,
+    [Display(Name = "Backend")] Backend,
+    [Display(Name = "Project Management")] Pm,
+    [Display(Name = "Full Stack")] FullStack,
+    [Display(Name = "Software")] Software,
+    [Display(Name = "Frontend")] Frontend
 }

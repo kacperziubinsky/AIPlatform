@@ -16,7 +16,7 @@ public class OfferService : IOfferService
 
     public async Task<OfferResponse> CreateOfferAsync(CreateOfferRequest request, Guid userId)
     {
-        ValidateOfferData(request.Title, request.Description, request.Category, request.Experience, request.StartDate, request.EndDate);
+        ValidateOfferData(request.Title, request.Description, request.Company, request.Category, request.Experience, request.StartDate, request.EndDate, validateStartDate: true);
 
         var offer = new JobOffer
         {
@@ -55,7 +55,11 @@ public class OfferService : IOfferService
 
             if (!string.IsNullOrWhiteSpace(filter.SearchTerm))
             {
-                query = query.Where(o => o.Title.Contains(filter.SearchTerm) || o.Description.Contains(filter.SearchTerm));
+                var pattern = $"%{EscapeLikePattern(filter.SearchTerm.Trim())}%";
+                query = query.Where(o =>
+                    EF.Functions.ILike(o.Title, pattern, "\\") ||
+                    EF.Functions.ILike(o.Description, pattern, "\\") ||
+                    (o.Company != null && EF.Functions.ILike(o.Company, pattern, "\\")));
             }
 
             if (filter.Category.HasValue)
@@ -101,6 +105,17 @@ public class OfferService : IOfferService
             .ToListAsync();
     }
 
+    public async Task<List<OfferResponse>> GetOffersByAuthorAsync(Guid authorId)
+    {
+        var offers = await _dbContext.Offers
+            .AsNoTracking()
+            .Where(o => o.AuthorId == authorId)
+            .OrderByDescending(o => o.CreatedOn)
+            .ToListAsync();
+
+        return offers.Select(MapToOfferResponse).ToList();
+    }
+
     public async Task<List<OfferResponse>> GetAllOffersAsync(int limit = 50)
     {
         return await GetOffersAsync(new OfferFilterRequest { Limit = limit });
@@ -134,7 +149,8 @@ public class OfferService : IOfferService
             throw new UnauthorizedAccessException("You don't have permission to update this offer.");
         }
 
-        ValidateOfferData(request.Title, request.Description, request.Category, request.Experience, request.StartDate, request.EndDate);
+        var startDateChanged = request.StartDate.Date != offer.StartDate.Date;
+        ValidateOfferData(request.Title, request.Description, request.Company, request.Category, request.Experience, request.StartDate, request.EndDate, validateStartDate: startDateChanged);
 
         offer.Title = request.Title;
         offer.Description = request.Description;
@@ -172,13 +188,22 @@ public class OfferService : IOfferService
         return true;
     }
 
-    private static void ValidateOfferData(string title, string description, object category, object experience, DateTime startDate, DateTime endDate)
+    private static void ValidateOfferData(string title, string description, string? company, object category, object experience, DateTime startDate, DateTime endDate, bool validateStartDate)
     {
         if (string.IsNullOrWhiteSpace(title))
             throw new ArgumentException("Title cannot be empty.");
 
+        if (title.Length > OfferLimits.TitleMaxLength)
+            throw new ArgumentException($"Title cannot be longer than {OfferLimits.TitleMaxLength} characters.");
+
         if (string.IsNullOrWhiteSpace(description))
             throw new ArgumentException("Description cannot be empty.");
+
+        if (description.Length > OfferLimits.DescriptionMaxLength)
+            throw new ArgumentException($"Description cannot be longer than {OfferLimits.DescriptionMaxLength} characters.");
+
+        if (company?.Length > OfferLimits.CompanyMaxLength)
+            throw new ArgumentException($"Company cannot be longer than {OfferLimits.CompanyMaxLength} characters.");
 
         if (!Enum.IsDefined(category.GetType(), category))
             throw new ArgumentException("Invalid Category specified.");
@@ -186,12 +211,15 @@ public class OfferService : IOfferService
         if (!Enum.IsDefined(experience.GetType(), experience))
             throw new ArgumentException("Invalid Experience level specified.");
 
-        if (startDate < DateTime.UtcNow.AddMinutes(-1))
+        if (validateStartDate && startDate.Date < DateTime.UtcNow.Date)
             throw new ArgumentException("Start date cannot be in the past.");
 
         if (endDate <= startDate)
             throw new ArgumentException("End date must be strictly after Start date.");
     }
+
+    private static string EscapeLikePattern(string value) =>
+        value.Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_");
 
     private static List<Requirement> MapRequirements(List<Requirement>? requirements)
     {

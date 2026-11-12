@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Offer.DTOs;
 using Offer.Services;
+using Offer.Extensions;
 
 namespace Offer.Controllers;
 
@@ -21,7 +22,7 @@ public class OfferController : ControllerBase
     [Authorize(Roles = "Recruiter")]
     public async Task<ActionResult<OfferResponse>> CreateOffer([FromBody] CreateOfferRequest request)
     {
-        var userId = GetUserIdFromClaims();
+        var userId = User.GetUserId();
         if (userId == null)
         {
             return Unauthorized("Invalid user token claim.");
@@ -36,6 +37,19 @@ public class OfferController : ControllerBase
         {
             return BadRequest(ex.Message);
         }
+    }
+
+    [HttpGet("mine")]
+    [Authorize(Roles = "Recruiter")]
+    public async Task<ActionResult<List<OfferResponse>>> GetMyOffers()
+    {
+        var userId = User.GetUserId();
+        if (userId == null)
+        {
+            return Unauthorized("Invalid user token claim.");
+        }
+
+        return Ok(await _offerService.GetOffersByAuthorAsync(userId.Value));
     }
 
     [HttpGet]
@@ -61,7 +75,7 @@ public class OfferController : ControllerBase
     [Authorize(Roles = "Recruiter")]
     public async Task<ActionResult<OfferResponse>> UpdateOffer(Guid id, [FromBody] UpdateOfferRequest request)
     {
-        var userId = GetUserIdFromClaims();
+        var userId = User.GetUserId();
         if (userId == null)
         {
             return Unauthorized("Invalid user token claim.");
@@ -90,7 +104,7 @@ public class OfferController : ControllerBase
     [Authorize(Roles = "Recruiter")]
     public async Task<IActionResult> DeleteOffer(Guid id)
     {
-        var userId = GetUserIdFromClaims();
+        var userId = User.GetUserId();
         if (userId == null)
         {
             return Unauthorized("Invalid user token claim.");
@@ -111,16 +125,4 @@ public class OfferController : ControllerBase
         }
     }
 
-    private Guid? GetUserIdFromClaims()
-    {
-        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) 
-                       ?? User.FindFirstValue("sub");
-
-        if (Guid.TryParse(userIdClaim, out var userId))
-        {
-            return userId;
-        }
-
-        return null;
-    }
 }
