@@ -16,7 +16,7 @@ Platforma rekrutacyjna zbudowana w architekturze mikroserwisów (.NET 10, Postgr
 
 - system Windows 10 lub 11 z zainstalowanym i uruchomionym programem Docker Desktop,
 - Windows PowerShell (wbudowany w system); wszystkie polecenia w niniejszym dokumencie zostały przygotowane dla tej powłoki,
-- opcjonalnie: [LM Studio](https://lmstudio.ai/) z modelem `qwen2.5-7b-instruct` udostępnionym na porcie `1234`. Jest ono wymagane wyłącznie do analizy CV i oceny AI. W przypadku jego braku pozostałe funkcje platformy działają poprawnie, natomiast CV otrzymuje status `Failed`,
+- opcjonalnie: [LM Studio](https://lmstudio.ai/) z modelem `qwen3.5 9b` udostępnionym na porcie `1234`. Jest ono wymagane wyłącznie do analizy CV i oceny AI. W przypadku jego braku pozostałe funkcje platformy działają poprawnie, natomiast CV otrzymuje status `Failed`,
 - opcjonalnie: .NET SDK 10, w przypadku budowania projektu bez użycia Dockera.
 
 ## Uruchomienie
